@@ -64,6 +64,70 @@ SYNCRO_SUBDOMAIN=your-subdomain SYNCRO_API_KEY=your-api-key npm start
 
 The server speaks MCP over stdio.
 
+## Running in Docker
+
+A `Dockerfile` is included. MCP servers communicate over stdio, so the
+container must be run with stdin attached (`-i`) — no ports to expose.
+
+### Build the image
+
+```bash
+docker build -t syncromsp-mcp .
+```
+
+### Run interactively (for testing)
+
+```bash
+docker run --rm -i \
+  -e SYNCRO_SUBDOMAIN=your-subdomain \
+  -e SYNCRO_API_KEY=your-api-key \
+  syncromsp-mcp
+```
+
+You can also load creds from a file:
+
+```bash
+docker run --rm -i --env-file .env syncromsp-mcp
+```
+
+### Wire it into Claude Desktop / Claude Code
+
+Point your MCP client at `docker` instead of `node`. The `-i` flag keeps
+stdin open and `--rm` auto-cleans the container on exit:
+
+```json
+{
+  "mcpServers": {
+    "syncromsp": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-e", "SYNCRO_SUBDOMAIN",
+        "-e", "SYNCRO_API_KEY",
+        "syncromsp-mcp"
+      ],
+      "env": {
+        "SYNCRO_SUBDOMAIN": "your-subdomain",
+        "SYNCRO_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+The `-e VAR` form (no value) tells Docker to pass through the variable
+from the parent process — that's how the values in the `env` block reach
+the container.
+
+### Notes
+
+- Do **not** add `-d` (detached) or `-t` (tty) — MCP needs raw stdio.
+- Don't bake secrets into the image; always pass them at runtime via
+  `-e` or `--env-file`.
+- The image runs as a non-root `app` user.
+- Use a tag (`syncromsp-mcp:0.1.0`) in production rather than `:latest`
+  so client configs pin to a known build.
+
 ## API reference
 
 Tools wrap the [Syncro REST API v1](https://api-docs.syncromsp.com/). Pagination
