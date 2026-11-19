@@ -20,6 +20,7 @@
   --phone: #0f1714;
   --screen: #fbfcfb;
   --chip: #f1f4f2;
+  --partner: #b5476b;
   --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
@@ -27,14 +28,14 @@
   :root:not([data-theme="light"]) {
     --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832;
     --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
-    --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722;
+    --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722; --partner: #e8799d;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832;
   --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
-  --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722;
+  --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722; --partner: #e8799d;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -46,7 +47,7 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 24px;
 }
-button, input, select { font: inherit; color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
 
 .wrap { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 390px); gap: 40px; align-items: start; }
@@ -235,6 +236,71 @@ button, input, select { font: inherit; color: inherit; }
 .empty { color: var(--muted); font-size: 14px; background: var(--chip); border-radius: 12px; padding: 14px; }
 .summary { background: var(--accent-soft); border-radius: 14px; padding: 12px 14px; font-size: 13px; display: grid; gap: 4px; margin-top: 14px; }
 
+/* why sheet */
+.sheet-scrim { position: absolute; inset: 0; background: rgba(8, 16, 12, .45); z-index: 25; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--panel); border-radius: 24px 24px 0 0; padding: 10px 22px 22px; display: grid; gap: 12px; box-shadow: 0 -10px 30px -12px rgba(0,0,0,.35); }
+.sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); justify-self: center; }
+.sheet h3 { font-family: var(--font-display); font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+.sheet .hint { margin: 0; }
+.sheet-btns { display: flex; gap: 10px; }
+.linkbtn { background: none; border: 0; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; justify-self: center; padding: 0; }
+.badge.who { top: auto; bottom: 12px; background: var(--partner); color: #fff; }
+
+/* tab bar */
+.tabbar { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); padding: 8px 8px 14px; background: var(--screen); }
+.tabbar button { background: none; border: 0; display: grid; justify-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 4px 0; }
+.tabbar svg { width: 22px; height: 22px; }
+.tabbar button[aria-current="page"] { color: var(--accent); }
+
+/* household */
+.hhhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: 8px; }
+.hhhead .q { margin: 0 0 4px; }
+.hhhead .eyebrow { margin: 0; }
+.avs { display: flex; padding-top: 6px; }
+.av-sm { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; border: 2px solid var(--screen); }
+.av-sm + .av-sm { margin-left: -8px; }
+.vetorow { display: grid; gap: 6px; margin: 10px 0 14px; font-size: 12px; color: var(--muted); }
+.seg.two { grid-template-columns: 1fr 1fr; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.tabs button { border: 1.5px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.tabs button b { font-variant-numeric: tabular-nums; background: var(--chip); border-radius: 999px; padding: 0 7px; font-size: 12px; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tabs button[aria-selected="true"] b { background: color-mix(in srgb, var(--accent-ink) 22%, transparent); }
+.votes { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.vote { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 8px; background: var(--chip); color: var(--muted); }
+.vote.yes { color: var(--save); }
+.vote.no { color: var(--remove); }
+.subhead { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; color: var(--muted); margin: 18px 0 8px; }
+.cta-row { margin-bottom: 12px; display: flex; }
+
+/* picks */
+.rec-list { display: grid; gap: 10px; }
+.rec { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px; }
+.rec .thumb { width: 72px; height: 60px; border-radius: 10px; overflow: hidden; }
+.rec .thumb svg { width: 100%; height: 100%; display: block; }
+.rec strong { display: block; font-variant-numeric: tabular-nums; }
+.rec small { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.score { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--accent); font-variant-numeric: tabular-nums; text-align: right; padding-right: 6px; }
+.score small { display: block; font-family: var(--font-body); font-weight: 500; font-size: 10px; color: var(--muted); }
+.hidden-note { font-size: 12px; color: var(--muted); background: var(--chip); border-radius: 10px; padding: 8px 10px; }
+.diff { display: grid; gap: 10px; }
+.diff-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 13px; }
+.diff-track { position: relative; height: 18px; }
+.diff-track::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: var(--line); border-radius: 1px; }
+.diff-track i { position: absolute; top: 3px; width: 13px; height: 13px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--screen); }
+.dot-you { background: var(--accent); }
+.dot-sam { background: var(--partner); }
+.diff-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.diff-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.diff-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding-left: 102px; }
+
+/* rethink */
+.insight { background: var(--accent-soft); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; font-size: 14px; }
+.insight .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.insight .btn { height: 42px; font-size: 14px; flex: 1 1 auto; padding: 0 12px; }
+textarea.field { height: auto; min-height: 160px; padding: 12px 14px; line-height: 1.5; resize: vertical; font-size: 14px; }
+.tag { display: inline-flex; border: 1.5px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
@@ -244,7 +310,7 @@ button, input, select { font: inherit; color: inherit; }
   <aside class="board">
     <p class="eyebrow">App storyboard · clickable prototype</p>
     <h1>Nestmatch</h1>
-    <p class="lede">Real estate lead gen with a swipe. A six-question interview collects what the buyer wants and who to loop in, then a short thinking screen leads into a deck of matched homes to swipe on.</p>
+    <p class="lede">Real estate lead gen with a swipe. A six-question interview collects what the buyer wants and who to loop in, then a short thinking screen leads into a deck of matched homes to swipe on. After that, a household sees what everyone saved, the app learns what each member values, and buyers can rethink their goals.</p>
     <p class="eyebrow">Screens</p>
     <ol class="steps" id="rail"></ol>
     <div class="note">
@@ -254,6 +320,7 @@ button, input, select { font: inherit; color: inherit; }
         <span><i class="dot" style="background:var(--remove)"></i>Swipe right: “House removed”</span>
       </div>
       <div>Drag the card, or tap the buttons under it. The three homes are sample listings.</div>
+      <div>After each swipe, an optional “Why?” sheet asks for reasons. Household screens use an example partner, Sam, with made-up swipes.</div>
     </div>
   </aside>
 
@@ -391,13 +458,23 @@ button, input, select { font: inherit; color: inherit; }
 
         <!-- 8. Swipe -->
         <section class="scr" data-step="swipe" hidden>
-          <div class="swipehead"><h2>Your matches</h2><span id="deckCount">1 of 3</span></div>
+          <div class="swipehead"><h2 id="deckTitle">Your matches</h2><span id="deckCount">1 of 3</span></div>
           <div class="deck" id="deck"></div>
           <div class="actions">
             <button class="act save" id="btnSave"><span class="c"><svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0112 7.6a4.3 4.3 0 017.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" fill="currentColor"/></svg></span>← Save</button>
             <button class="act remove" id="btnRemove"><span class="c"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>Remove →</button>
           </div>
           <div class="toast" id="toast"></div>
+          <div class="sheet-scrim" id="whyScrim" hidden></div>
+          <div class="sheet" id="whySheet" hidden role="dialog" aria-labelledby="whyTitle">
+            <span class="grab"></span>
+            <h3 id="whyTitle">What did you like?</h3>
+            <p class="hint">Optional. Only you see your reasons; they teach your matches.</p>
+            <div class="chips" id="whyChips"></div>
+            <input class="field" id="whyText" placeholder="Anything else? e.g. kitchen felt small" autocomplete="off">
+            <div class="sheet-btns"><button class="btn ghost" id="whySkip">Skip</button><button class="btn" id="whyDone">Save reason</button></div>
+            <button class="linkbtn" id="whyStop">Stop asking after every swipe</button>
+          </div>
         </section>
 
         <!-- 9. Done -->
@@ -408,7 +485,57 @@ button, input, select { font: inherit; color: inherit; }
             <div class="saved-list" id="savedList"></div>
             <div class="summary" id="summary"></div>
           </div>
-          <div class="scr-foot"><button class="btn ghost" id="again">Swipe again</button><button class="btn" id="restart">Restart storyboard</button></div>
+          <div class="scr-foot"><button class="btn ghost" id="again">Swipe again</button><button class="btn" id="toHousehold">See household lists</button></div>
+        </section>
+
+        <!-- 10. Household lists -->
+        <section class="scr" data-step="household" hidden>
+          <div class="scr-body">
+            <div class="hhhead">
+              <div><p class="eyebrow">Household</p><h2 class="q">Rivera household</h2></div>
+              <div class="avs"><span class="av-sm" style="background:var(--accent)">You</span><span class="av-sm" style="background:var(--partner)">Sam</span></div>
+            </div>
+            <div class="vetorow">
+              <span>When one of you removes a home</span>
+              <div class="seg two" id="vetoSeg"><button aria-pressed="true" data-v="any">It’s out</button><button aria-pressed="false" data-v="majority">Mark it split</button></div>
+            </div>
+            <div class="tabs" id="hhTabs" role="tablist"></div>
+            <div id="hhList"></div>
+          </div>
+          <nav class="tabbar" aria-label="App sections"></nav>
+        </section>
+
+        <!-- 11. Family picks -->
+        <section class="scr" data-step="family" hidden>
+          <div class="scr-body">
+            <p class="eyebrow" style="margin-top:8px">Picks</p>
+            <h2 class="q" id="recTitle" style="margin-top:0">Picks for you</h2>
+            <div class="seg two" id="viewSeg" style="margin-bottom:14px"><button aria-pressed="true" data-view="you">For you</button><button aria-pressed="false" data-view="family">For the family</button></div>
+            <div class="rec-list" id="recList"></div>
+            <p class="fine" id="recFine"></p>
+            <p class="label">What each of you values</p>
+            <div class="diff-legend"><span><i class="dot" style="background:var(--accent)"></i>You</span><span><i class="dot" style="background:var(--partner)"></i>Sam</span></div>
+            <div class="diff" id="diffChart"></div>
+            <div class="diff-axis"><span>Matters less</span><span>Matters more</span></div>
+            <p class="fine">Learned from swipes and reasons. Example data.</p>
+          </div>
+          <nav class="tabbar" aria-label="App sections"></nav>
+        </section>
+
+        <!-- 12. Rethink goals -->
+        <section class="scr" data-step="rethink" hidden>
+          <div class="scr-body">
+            <p class="eyebrow" style="margin-top:8px">Goals</p>
+            <h2 class="q" style="margin-top:0">Rethink your goals</h2>
+            <p class="hint">We compare what you asked for with what you actually save.</p>
+            <div class="insight" id="insight"></div>
+            <p class="label">Your reasons so far</p>
+            <div class="chips" id="reasonSummary"></div>
+            <p class="label">Your house profile, as the matcher reads it</p>
+            <textarea class="field" id="narrText" aria-label="House profile description"></textarea>
+            <p class="fine">Edit it in your own words. This text goes to the matching engine alongside your criteria.</p>
+          </div>
+          <nav class="tabbar" aria-label="App sections"></nav>
         </section>
       </div>
     </div>
@@ -427,6 +554,9 @@ button, input, select { font: inherit; color: inherit; }
     { id: 'thinking', name: 'Thinking splash', d: 'Waits 5 seconds' },
     { id: 'swipe', name: 'Swipe homes', d: 'Three example homes' },
     { id: 'done', name: 'Wrap-up', d: 'Saved homes and who sees them' },
+    { id: 'household', name: 'Household lists', d: 'Common, waiting on you, denied' },
+    { id: 'family', name: 'Family picks', d: 'Personal vs family recommendations' },
+    { id: 'rethink', name: 'Rethink goals', d: 'Reasons, check-ins, profile text' },
   ];
   const INTERVIEW = 6;
 
@@ -435,6 +565,7 @@ button, input, select { font: inherit; color: inherit; }
     beds: 3, baths: 2, garage: 1, feats: new Set(['Home office', 'Fenced yard']),
     min: 350000, max: 650000, fin: 'Pre-approved',
     share: new Set(['agent']), saved: [], removed: [],
+    mine: {}, reasons: {}, veto: 'any', hhTab: 'common', askWhy: true, view: 'you', narrDirty: false,
   };
 
   const $ = s => document.querySelector(s);
@@ -444,7 +575,7 @@ button, input, select { font: inherit; color: inherit; }
   /* ---------- rail ---------- */
   const rail = $('#rail');
   rail.innerHTML = STEPS.map((s, i) => `<li><button data-go="${s.id}"><span class="n">${i + 1}</span><span><strong>${s.name}</strong><span class="d">${s.d}</span></span></button></li>`).join('');
-  rail.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+  rail.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { deckMode = 'match'; go(b.dataset.go); } });
 
   let current = 'type', thinkTimer = null, thinkRaf = null;
   function go(id) {
@@ -461,6 +592,10 @@ button, input, select { font: inherit; color: inherit; }
     if (id === 'thinking') startThinking();
     if (id === 'swipe') buildDeck();
     if (id === 'done') buildDone();
+    if (id === 'household') buildHousehold();
+    if (id === 'family') buildFamily();
+    if (id === 'rethink') buildRethink();
+    $$('.tabbar button').forEach(b => b.dataset.tab === id ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   }
   document.addEventListener('click', e => {
     if (e.target.closest('[data-next]') && !e.target.closest('[data-next]').disabled) {
@@ -533,7 +668,7 @@ button, input, select { font: inherit; color: inherit; }
     const render = () => { out.textContent = state[k] === 0 ? (k === 'beds' ? 'Studio' : 'Any') : state[k] + '+'; minus.disabled = state[k] <= LIMITS[k][0]; plus.disabled = state[k] >= LIMITS[k][1]; };
     minus.onclick = () => { state[k] = Math.max(LIMITS[k][0], state[k] - 1); render(); };
     plus.onclick = () => { state[k] = Math.min(LIMITS[k][1], state[k] + 1); render(); };
-    render();
+    render(); st._render = render;
   });
 
   /* ---------- 4. price ---------- */
@@ -606,8 +741,8 @@ button, input, select { font: inherit; color: inherit; }
   }
 
   /* ---------- 8. swipe deck ---------- */
-  function art(kind, sky, wall, trim, w = 340, h = 260) {
-    const g = h * 0.78;
+  function art(kind, sky, wall, trim, uid = kind) {
+    const w = 340, h = 260, g = h * 0.78;
     let b = '';
     if (kind === 'free') {
       b = `<path d="M70 ${g} V120 L170 52 L270 120 V${g} Z" fill="${wall}"/><path d="M58 124 L170 44 L282 124" fill="none" stroke="${trim}" stroke-width="10" stroke-linejoin="round"/>
@@ -627,8 +762,8 @@ button, input, select { font: inherit; color: inherit; }
         <rect x="${x + 36}" y="${g - 44}" width="24" height="44" fill="${i === 1 ? wall : trim}"/>`; }).join('') +
         `<path d="M24 112 L78 66 L126 104 L174 66 L222 104 L270 66 L318 112" fill="none" stroke="${trim}" stroke-width="8" stroke-linejoin="round"/>`;
     }
-    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMax slice"><defs><linearGradient id="s${kind}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs>
-      <rect width="${w}" height="${h}" fill="url(#s${kind})"/><circle cx="${w - 52}" cy="44" r="20" fill="#ffd27a" opacity=".9"/>
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMax slice"><defs><linearGradient id="s${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs>
+      <rect width="${w}" height="${h}" fill="url(#s${uid})"/><circle cx="${w - 52}" cy="44" r="20" fill="#ffd27a" opacity=".9"/>
       <path d="M0 ${g - 30} Q90 ${g - 70} 180 ${g - 40} T340 ${g - 50} V${g} H0Z" fill="#9cc3a6" opacity=".55"/>
       ${b}<rect y="${g}" width="${w}" height="${h - g}" fill="#7fae7a"/><path d="M150 ${g} L120 ${h} H220 L190 ${g}Z" fill="#d9d2c4"/></svg>`;
   }
@@ -637,22 +772,37 @@ button, input, select { font: inherit; color: inherit; }
     { id: 2, kind: 'condo', price: 415000, addr: '88 Harbor Row, Unit 12', area: 'Riverside', beds: 2, baths: 2, sqft: 1210, match: 88, tags: ['Rooftop deck', 'In-unit laundry', 'EV charger'], sky: ['#f6c9a6', '#fbe9da'], wall: '#d7dde6', trim: '#3a4656' },
     { id: 3, kind: 'attached', price: 552000, addr: '17 Juniper Court', area: 'Bellmont Heights', beds: 3, baths: 3, sqft: 1780, match: 83, tags: ['Finished basement', 'Open kitchen', 'Walk to park'], sky: ['#c4d9f0', '#eef3fa'], wall: '#e9d7c4', trim: '#7a3b2e' },
   ];
+  // Homes only the example partner (Sam) has swiped on, for the household screens
+  const EXTRA = [
+    { id: 4, kind: 'free', price: 468000, addr: '902 Aster Way', area: 'Sloan’s Park', beds: 2, baths: 2, sqft: 1520, match: 90, tags: ['Home office', 'Fenced yard', 'Walk to park'], sky: ['#b9dcf3', '#eef6fb'], wall: '#dfe8d8', trim: '#3d5a40' },
+    { id: 5, kind: 'attached', price: 529000, addr: '31 Fenwick Row', area: 'Bellmont Heights', beds: 3, baths: 2.5, sqft: 1690, match: 86, tags: ['Open kitchen', 'Primary suite', 'EV charger'], sky: ['#f3d2b8', '#fbeee2'], wall: '#d9d3e6', trim: '#4a3f6b' },
+    { id: 6, kind: 'condo', price: 610000, addr: '250 Summit Ave, Unit 7', area: 'Cheesman Park', beds: 2, baths: 2, sqft: 1340, match: 79, tags: ['Mountain view', 'Rooftop deck', 'Gym'], sky: ['#c9d6ef', '#eef2fa'], wall: '#e4ddd2', trim: '#5a4632' },
+  ];
+  const ALL = HOMES.concat(EXTRA);
+  const pic = h => art(h.kind, h.sky, h.wall, h.trim, 'h' + h.id);
+  let deckMode = 'match', deckTotal = 0;
   let queue = [];
   function cardHTML(h) {
-    return `<div class="card" data-id="${h.id}"><div class="art">${art(h.kind, h.sky, h.wall, h.trim)}<span class="badge">${h.match}% match</span><span class="badge ex">Example listing</span><span class="stamp save">SAVE</span><span class="stamp remove">NOPE</span></div>
+    return `<div class="card" data-id="${h.id}"><div class="art">${pic(h)}<span class="badge">${h.match}% match</span>${deckMode === 'waiting' ? '<span class="badge who">♥ Sam saved this</span>' : ''}<span class="badge ex">Example listing</span><span class="stamp save">SAVE</span><span class="stamp remove">NOPE</span></div>
       <div class="info"><div class="price">$${h.price.toLocaleString()}</div><div class="addr">${h.addr} · ${h.area}${state.loc.trim() ? ' · near ' + state.loc.trim() : ''}</div>
       <div class="specs">${h.beds} <span>bd</span> ${h.baths} <span>ba</span> ${h.sqft.toLocaleString()} <span>sq ft</span></div>
       <div class="tags">${h.tags.map(t => `<b>${t}</b>`).join('')}</div></div></div>`;
   }
   function buildDeck() {
-    state.saved = []; state.removed = []; queue = HOMES.slice(); renderDeck();
+    hideWhy(); busy = false; state.saved = []; state.removed = [];
+    queue = deckMode === 'waiting' ? hhGroups().waiting : HOMES.slice();
+    deckTotal = queue.length;
+    $('#deckTitle').textContent = deckMode === 'waiting' ? 'Sam saved these' : 'Your matches';
+    if (!queue.length) { go(deckMode === 'waiting' ? 'household' : 'done'); return; }
+    renderDeck();
   }
+  const nextCard = () => queue.length ? renderDeck() : go(deckMode === 'waiting' ? 'household' : 'done');
   function renderDeck() {
     const deck = $('#deck');
     deck.innerHTML = queue.slice(0, 2).reverse().map(cardHTML).join('');
     const cards = deck.querySelectorAll('.card');
     if (cards.length === 2) cards[0].classList.add('behind');
-    $('#deckCount').textContent = queue.length ? `${HOMES.length - queue.length + 1} of ${HOMES.length}` : '';
+    $('#deckCount').textContent = queue.length ? `${deckTotal - queue.length + 1} of ${deckTotal}` : '';
     const top = deck.lastElementChild; if (top) bindDrag(top);
   }
   let busy = false;
@@ -677,13 +827,14 @@ button, input, select { font: inherit; color: inherit; }
     if (busy || !queue.length) return; busy = true;
     const card = $('#deck').lastElementChild, h = queue.shift();
     (action === 'save' ? state.saved : state.removed).push(h);
+    state.mine[h.id] = action;
     card.style.transition = 'transform .35s ease, opacity .35s ease';
     card.querySelector('.stamp.' + action).style.opacity = 1;
     card.style.transform = `translateX(${action === 'save' ? -420 : 420}px) rotate(${action === 'save' ? -22 : 22}deg)`;
     card.style.opacity = 0;
     const behind = $('#deck .card.behind'); if (behind) behind.classList.remove('behind');
     toast(action);
-    setTimeout(() => { busy = false; queue.length ? renderDeck() : go('done'); }, 1100);
+    setTimeout(() => { if (state.askWhy) openWhy(h, action); else { busy = false; nextCard(); } }, 950);
   }
   const t = $('#toast');
   function toast(action) {
@@ -705,14 +856,164 @@ button, input, select { font: inherit; color: inherit; }
   function buildDone() {
     const n = state.saved.length;
     $('#doneTitle').textContent = n === 1 ? 'You saved 1 home' : `You saved ${n} homes`;
-    $('#savedList').innerHTML = n ? state.saved.map(h => `<div class="saved-item"><div class="thumb">${art(h.kind, h.sky, h.wall, h.trim)}</div><div><strong>$${h.price.toLocaleString()}</strong><small>${h.addr} · ${h.beds} bd · ${h.baths} ba</small></div></div>`).join('')
+    $('#savedList').innerHTML = n ? state.saved.map(h => `<div class="saved-item"><div class="thumb">${pic(h)}</div><div><strong>$${h.price.toLocaleString()}</strong><small>${h.addr} · ${h.beds} bd · ${h.baths} ba</small></div></div>`).join('')
       : `<div class="empty">No saved homes this round. Swipe left on a home to save it.</div>`;
     const who = state.share.has('none') || !state.share.size ? 'Only you' : [...state.share].map(id => PEOPLE.find(p => p.id === id).name).join(', ');
     const name = $('#fName').value.trim();
     $('#summary').innerHTML = `<div><b>Shared with:</b> ${who}</div><div><b>Lead:</b> ${name || 'Name not entered'} · ${$('#fWhen').value.toLowerCase()} · ${state.fin.toLowerCase()}</div><div><b>Removed:</b> ${state.removed.length} of ${HOMES.length}</div>`;
   }
   $('#again').onclick = () => go('swipe');
-  $('#restart').onclick = () => location.reload();
+  $('#toHousehold').onclick = () => go('household');
+
+  /* ---------- why sheet ---------- */
+  const WHY_TAGS = ['Price', 'Location', 'Size', 'Layout', 'Condition', 'Yard', 'Schools', 'Photos', 'Commute'];
+  let pendingWhy = null;
+  function openWhy(h, action) {
+    pendingWhy = { h, action };
+    $('#whyTitle').textContent = action === 'save' ? 'What did you like?' : 'What didn’t work?';
+    $('#whyChips').innerHTML = WHY_TAGS.map(t => `<button class="chip" aria-pressed="false">${t}</button>`).join('');
+    $('#whyText').value = '';
+    $('#whyScrim').hidden = false; $('#whySheet').hidden = false;
+  }
+  function hideWhy() { $('#whyScrim').hidden = true; $('#whySheet').hidden = true; pendingWhy = null; }
+  function closeWhy(keep) {
+    if (keep && pendingWhy) {
+      const tags = $$('#whyChips .chip[aria-pressed="true"]').map(b => b.textContent), text = $('#whyText').value.trim();
+      if (tags.length || text) state.reasons[pendingWhy.h.id] = { action: pendingWhy.action, tags, text };
+    }
+    hideWhy(); busy = false; nextCard();
+  }
+  $('#whyChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); });
+  $('#whyDone').onclick = () => closeWhy(true);
+  $('#whySkip').onclick = () => closeWhy(false);
+  $('#whyScrim').onclick = () => closeWhy(false);
+  $('#whyStop').onclick = () => { state.askWhy = false; closeWhy(true); };
+
+  /* ---------- tab bar ---------- */
+  const TAB_ICONS = {
+    swipe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="6" y="3" width="12" height="16" rx="2.5" transform="rotate(-8 12 11)"/><path d="M12 15.5s-3-1.9-3-4.1a1.7 1.7 0 013-1.1 1.7 1.7 0 013 1.1c0 2.2-3 4.1-3 4.1z" fill="currentColor" stroke="none"/></svg>',
+    household: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><circle cx="9.5" cy="13.5" r="1.8"/><circle cx="14.5" cy="13.5" r="1.8"/><path d="M7 20c0-2 1.2-3.2 2.5-3.2S12 18 12 20M12 20c0-2 1.2-3.2 2.5-3.2S17 18 17 20"/></svg>',
+    family: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>',
+    rethink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>',
+  };
+  const TABS = [['swipe', 'Matches'], ['household', 'Household'], ['family', 'Picks'], ['rethink', 'Goals']];
+  $$('.tabbar').forEach(nav => { nav.innerHTML = TABS.map(([id, name]) => `<button data-tab="${id}">${TAB_ICONS[id]}${name}</button>`).join(''); });
+  document.addEventListener('click', e => { const b = e.target.closest('.tabbar [data-tab]'); if (!b) return; if (b.dataset.tab === 'swipe') deckMode = 'match'; go(b.dataset.tab); });
+
+  /* ---------- 10. household lists ---------- */
+  const SAM = { 1: 'save', 2: 'remove', 3: 'save', 4: 'save', 5: 'save', 6: 'remove' };
+  const DEFAULT_MINE = { 1: 'save', 2: 'save', 3: 'remove' };
+  const myDecisions = () => ({ ...DEFAULT_MINE, ...state.mine });
+  function hhGroups() {
+    const m = myDecisions(), g = { common: [], waiting: [], waitingSam: [], denied: [], split: [] };
+    ALL.forEach(h => {
+      const a = m[h.id], b = SAM[h.id];
+      if (!a && !b) return;
+      const v = [a, b].filter(Boolean), rem = v.includes('remove'), sav = v.includes('save');
+      if (state.veto === 'majority' && rem && sav) g.split.push(h);
+      else if (rem) g.denied.push(h);
+      else if (a && b) g.common.push(h);
+      else if (!a) g.waiting.push(h);
+      else g.waitingSam.push(h);
+    });
+    return g;
+  }
+  const vote = (who, d) => d ? `<span class="vote ${d === 'save' ? 'yes' : 'no'}">${who} ${d === 'save' ? '✓ saved' : '✕ removed'}</span>` : `<span class="vote">${who}: not seen yet</span>`;
+  const hhRow = h => { const m = myDecisions(); return `<div class="saved-item"><div class="thumb">${pic(h)}</div><div><strong>$${h.price.toLocaleString()}</strong><small>${h.addr} · ${h.beds} bd · ${h.baths} ba</small><div class="votes">${vote('You', m[h.id])}${vote('Sam', SAM[h.id])}</div></div></div>`; };
+  const hhList = (hs, empty) => hs.length ? `<div class="saved-list">${hs.map(hhRow).join('')}</div>` : `<div class="empty">${empty}</div>`;
+  function buildHousehold() {
+    const g = hhGroups();
+    const tabs = [['common', 'Common', g.common.length], ['waiting', 'Waiting on you', g.waiting.length], ['denied', 'Denied', g.denied.length]];
+    if (state.veto === 'majority') tabs.push(['split', 'Split', g.split.length]);
+    if (!tabs.some(t => t[0] === state.hhTab)) state.hhTab = 'common';
+    $('#hhTabs').innerHTML = tabs.map(([id, name, n]) => `<button role="tab" data-tab-id="${id}" aria-selected="${id === state.hhTab}">${name} <b>${n}</b></button>`).join('');
+    let html = '';
+    if (state.hhTab === 'common') html = hhList(g.common, 'No homes you both saved yet. Check Waiting on you.');
+    if (state.hhTab === 'waiting') {
+      html = g.waiting.length
+        ? `<div class="cta-row"><button class="btn" id="reviewWaiting">Review ${g.waiting.length} home${g.waiting.length > 1 ? 's' : ''} Sam saved</button></div>` + hhList(g.waiting, '')
+        : `<div class="empty">You’re caught up on everything Sam saved.</div>`;
+      if (g.waitingSam.length) html += `<p class="subhead">Waiting on Sam</p>` + hhList(g.waitingSam, '');
+    }
+    if (state.hhTab === 'denied') html = hhList(g.denied, 'Nothing ruled out yet.') + (g.denied.length ? `<p class="fine">Reasons stay private to whoever removed the home.</p>` : '');
+    if (state.hhTab === 'split') html = hhList(g.split, 'No disagreements right now.') + (g.split.length ? `<p class="fine">One of you saved it and one removed it. Talk it over, or ask your agent for a second showing.</p>` : '');
+    $('#hhList').innerHTML = html;
+  }
+  $('#hhTabs').addEventListener('click', e => { const b = e.target.closest('[data-tab-id]'); if (!b) return; state.hhTab = b.dataset.tabId; buildHousehold(); });
+  $('#hhList').addEventListener('click', e => { if (e.target.closest('#reviewWaiting')) { deckMode = 'waiting'; go('swipe'); } });
+  $('#vetoSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.veto = b.dataset.v; $$('#vetoSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    if (state.veto === 'majority') state.hhTab = 'split';
+    buildHousehold();
+  });
+
+  /* ---------- 11. family picks ---------- */
+  const SCORES = { 1: [94, 71], 2: [88, 52], 3: [76, 84], 4: [90, 88], 5: [82, 91] };
+  const WHY_REC = {
+    1: ['Fenced yard and a home office, both on your list', 'Sam scores it lower: a long walk to shops'],
+    2: ['Rooftop deck and an EV charger', ''],
+    3: ['Finished basement, a bit over your price per sq ft', 'Sam likes the walk to the park'],
+    4: ['Home office and walk to park, under budget', 'Works for both: your office, Sam’s walkability'],
+    5: ['Open kitchen, a feature you often save', 'Sam’s top pick; breaks none of your dealbreakers'],
+  };
+  const FACTORS = [['Yard', 8.5, 6], ['Walkability', 4, 9], ['Home office', 9, 5], ['Price', 7, 7.5], ['Schools', 6, 8]];
+  function buildFamily() {
+    const fam = state.view === 'family';
+    $('#recTitle').textContent = fam ? 'Picks for the family' : 'Picks for you';
+    const sc = id => fam ? Math.min(...SCORES[id]) : SCORES[id][0];
+    const ids = Object.keys(SCORES).map(Number).filter(id => !(fam && id === 2)).sort((a, b) => sc(b) - sc(a)).slice(0, 4);
+    $('#recList').innerHTML = ids.map(id => {
+      const h = ALL.find(x => x.id === id);
+      return `<div class="rec"><div class="thumb">${pic(h)}</div><div><strong>$${h.price.toLocaleString()}</strong><small>${h.addr}</small><small>${WHY_REC[id][fam ? 1 : 0]}</small></div><div class="score">${sc(id)}<small>${fam ? 'family' : 'match'}</small></div></div>`;
+    }).join('') + (fam ? `<div class="hidden-note">1 home hidden: 88 Harbor Row has no yard, one of Sam’s dealbreakers.</div>` : '');
+    $('#recFine').textContent = fam
+      ? 'Family score is the lower of your two scores, so a home only ranks high if it works for both of you.'
+      : 'Ranked by what you’ve saved, removed and told us.';
+    $('#diffChart').innerHTML = FACTORS.map(([f, y, s]) => `<div class="diff-row"><span>${f}</span><span class="diff-track"><i class="dot-sam" style="left:${s * 10}%"></i><i class="dot-you" style="left:${y * 10}%"></i></span></div>`).join('');
+  }
+  $('#viewSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.view = b.dataset.view; $$('#viewSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    buildFamily();
+  });
+
+  /* ---------- 12. rethink goals ---------- */
+  function narrative() {
+    const t = [...state.types].map(id => TYPES.find(x => x.id === id).name.toLowerCase());
+    const what = t.length ? `${/^[aeiou]/.test(t[0]) ? 'an' : 'a'} ${t.join(' or ')} home` : 'a home';
+    const where = state.loc.trim() ? ` within ${state.radius} of ${state.loc.trim()}` : '';
+    const feats = [...state.feats].map(f => f.toLowerCase());
+    const beds = state.beds === 0 ? 'a studio or larger' : `at least ${state.beds} bedroom${state.beds > 1 ? 's' : ''}`;
+    const fl = feats.length ? `, plus ${feats.length > 1 ? feats.slice(0, -1).join(', ') + ' and ' + feats.at(-1) : feats[0]}` : '';
+    const when = $('#fWhen').value;
+    const move = when.startsWith('In') ? `Planning to move ${when.toLowerCase()}.` : 'Just browsing for now.';
+    return `Looking for ${what}${where}. Need ${beds} and ${state.baths}+ bathroom${state.baths > 1 ? 's' : ''}${fl}. Budget ${money(state.min)} to ${money(state.max)}, ${state.fin.toLowerCase()}. ${move}`;
+  }
+  const renderNarr = () => { if (!state.narrDirty) $('#narrText').value = narrative(); };
+  $('#narrText').addEventListener('input', () => { state.narrDirty = true; });
+  function buildRethink() {
+    const m = myDecisions(), saved = ALL.filter(h => m[h.id] === 'save'), fewer = saved.filter(h => h.beds < state.beds);
+    const ins = $('#insight');
+    if (fewer.length) {
+      const nb = Math.min(...fewer.map(h => h.beds));
+      ins.innerHTML = `<div>You asked for <b>${state.beds}+ bedrooms</b>, but ${fewer.length} of the ${saved.length} homes you saved ${fewer.length === 1 ? 'has' : 'have'} ${nb}. Update your profile?</div><div class="btns"><button class="btn" id="rtYes">Change to ${nb}+ bedrooms</button><button class="btn ghost" id="rtNo">Keep ${state.beds}+</button></div>`;
+      $('#rtYes').onclick = () => {
+        state.beds = nb; $$('.stepper').forEach(s => s._render()); state.narrDirty = false; renderNarr();
+        ins.innerHTML = `<div><b>Profile updated.</b> You’ll now see homes with ${nb}+ bedrooms, and the description below changed to match.</div>`;
+      };
+      $('#rtNo').onclick = () => { ins.innerHTML = `<div>Kept at ${state.beds}+ bedrooms. We’ll check again after more swipes.</div>`; };
+    } else {
+      ins.innerHTML = `<div>Your saves match your profile so far. We’ll check again after more swipes.</div>`;
+    }
+    const counts = {};
+    Object.values(state.reasons).forEach(r => r.tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
+    const keys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    $('#reasonSummary').innerHTML = keys.length
+      ? keys.map(k => `<span class="tag">${k} × ${counts[k]}</span>`).join('')
+      : `<div class="empty">No reasons yet. Answer “Why?” after a swipe and they’ll show up here.</div>`;
+    renderNarr();
+  }
 
   go('type');
 })();
