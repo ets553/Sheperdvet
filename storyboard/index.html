@@ -21,6 +21,7 @@
   --screen: #fbfcfb;
   --chip: #f1f4f2;
   --partner: #b5476b;
+  --warn: #a8670f;
   --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
@@ -28,14 +29,14 @@
   :root:not([data-theme="light"]) {
     --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832;
     --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
-    --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722; --partner: #e8799d;
+    --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722; --partner: #e8799d; --warn: #e8b04b;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832;
   --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
-  --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722; --partner: #e8799d;
+  --save: #4cc38a; --remove: #ef6f66; --phone: #000000; --screen: #121a17; --chip: #1c2722; --partner: #e8799d; --warn: #e8b04b;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -236,6 +237,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .empty { color: var(--muted); font-size: 14px; background: var(--chip); border-radius: 12px; padding: 14px; }
 .summary { background: var(--accent-soft); border-radius: 14px; padding: 12px 14px; font-size: 13px; display: grid; gap: 4px; margin-top: 14px; }
 
+/* value badge */
+.pricerow { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vbadge { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 5px 10px; white-space: nowrap; }
+.meter { display: inline-flex; gap: 2px; }
+.meter i { width: 5px; height: 11px; border-radius: 2px; background: currentColor; opacity: .25; }
+.meter i.on { opacity: 1; }
+.vb-great { background: var(--save); color: #fff; }
+.vb-good { background: color-mix(in srgb, var(--save) 15%, transparent); color: var(--save); }
+.vb-fair { background: var(--chip); color: var(--ink); }
+.vb-above { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.vb-high { background: color-mix(in srgb, var(--remove) 13%, transparent); color: var(--remove); }
+.vb-none { background: var(--chip); color: var(--muted); font-weight: 600; }
+.valline { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
 /* why sheet */
 .sheet-scrim { position: absolute; inset: 0; background: rgba(8, 16, 12, .45); z-index: 25; }
 .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--panel); border-radius: 24px 24px 0 0; padding: 10px 22px 22px; display: grid; gap: 12px; box-shadow: 0 -10px 30px -12px rgba(0,0,0,.35); }
@@ -320,6 +335,7 @@ textarea.field { height: auto; min-height: 160px; padding: 12px 14px; line-heigh
         <span><i class="dot" style="background:var(--remove)"></i>Swipe right: “House removed”</span>
       </div>
       <div>Drag the card, or tap the buttons under it. The three homes are sample listings.</div>
+      <div>Value badges compare the list price with an estimated value from nearby sales: Great value, Good value, Fair price, Above market, Room to negotiate.</div>
       <div>After each swipe, an optional “Why?” sheet asks for reasons. Household screens use an example partner, Sam, with made-up swipes.</div>
     </div>
   </aside>
@@ -780,12 +796,29 @@ textarea.field { height: auto; min-height: 160px; padding: 12px 14px; line-heigh
   ];
   const ALL = HOMES.concat(EXTRA);
   const pic = h => art(h.kind, h.sky, h.wall, h.trim, 'h' + h.id);
+  // Example estimated values: [estimate, number of comparable nearby sales]
+  const VALUE = { 1: [521000, 6], 2: [408000, 5], 3: [529000, 4], 4: [486000, 7], 5: [null, 2], 6: [598000, 4] };
+  const RATINGS = [['great', 'Great value'], ['good', 'Good value'], ['fair', 'Fair price'], ['above', 'Above market'], ['high', 'Room to negotiate']];
+  function valueRating(h) {
+    const [est, comps] = VALUE[h.id] || [null, 0];
+    if (!est || comps < 3) return { badge: '<span class="vbadge vb-none">No value rating</span>', line: 'Too few similar sales nearby to estimate a value.' };
+    const pct = (h.price - est) / est;
+    const i = pct <= -0.05 ? 0 : pct <= -0.02 ? 1 : pct < 0.02 ? 2 : pct < 0.05 ? 3 : 4;
+    const [cls, label] = RATINGS[i];
+    const meter = `<span class="meter" aria-hidden="true">${[0, 1, 2, 3, 4].map(k => `<i${k === i ? ' class="on"' : ''}></i>`).join('')}</span>`;
+    const diff = Math.abs(pct * 100).toFixed(1);
+    return {
+      badge: `<span class="vbadge vb-${cls}">${meter}${label}</span>`,
+      line: `Est. value ${money(est)} · list is ${diff}% ${pct < 0 ? 'below' : 'above'} · ${comps} nearby sales`,
+    };
+  }
   let deckMode = 'match', deckTotal = 0;
   let queue = [];
   function cardHTML(h) {
     return `<div class="card" data-id="${h.id}"><div class="art">${pic(h)}<span class="badge">${h.match}% match</span>${deckMode === 'waiting' ? '<span class="badge who">♥ Sam saved this</span>' : ''}<span class="badge ex">Example listing</span><span class="stamp save">SAVE</span><span class="stamp remove">NOPE</span></div>
-      <div class="info"><div class="price">$${h.price.toLocaleString()}</div><div class="addr">${h.addr} · ${h.area}${state.loc.trim() ? ' · near ' + state.loc.trim() : ''}</div>
+      <div class="info"><div class="pricerow"><div class="price">$${h.price.toLocaleString()}</div>${valueRating(h).badge}</div><div class="addr">${h.addr} · ${h.area}${state.loc.trim() ? ' · near ' + state.loc.trim() : ''}</div>
       <div class="specs">${h.beds} <span>bd</span> ${h.baths} <span>ba</span> ${h.sqft.toLocaleString()} <span>sq ft</span></div>
+      <div class="valline">${valueRating(h).line}</div>
       <div class="tags">${h.tags.map(t => `<b>${t}</b>`).join('')}</div></div></div>`;
   }
   function buildDeck() {
