@@ -1,0 +1,705 @@
+<title>Nestmatch Admin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: storyboard notes on top, then a browser frame holding the admin app (dark sidebar + working area + right-side drawer). */
+:root {
+  --bg: #eef1ef; --panel: #ffffff; --ink: #14231d; --muted: #5c6b64; --line: #dde3df; --chip: #f1f4f2;
+  --accent: #1e5a45; --accent-ink: #ffffff; --accent-soft: #dcebe4; --sun: #f2b33d;
+  --good: #1f8a5b; --bad: #c2413a; --warn: #a8670f;
+  --side: #14322a; --side-ink: #cfe0d8; --side-muted: #86a398; --side-active: #21503f;
+  --frame: #d5dcd8; --row-hover: #f6f8f7;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832; --chip: #1c2722;
+    --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
+    --good: #4cc38a; --bad: #ef6f66; --warn: #e8b04b;
+    --side: #0a1310; --side-ink: #cfe0d8; --side-muted: #7f978d; --side-active: #1b3a2f;
+    --frame: #26322d; --row-hover: #1a2420;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832; --chip: #1c2722;
+  --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
+  --good: #4cc38a; --bad: #ef6f66; --warn: #e8b04b;
+  --side: #0a1310; --side-ink: #cfe0d8; --side-muted: #7f978d; --side-active: #1b3a2f;
+  --frame: #26322d; --row-hover: #1a2420;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 18px; }
+
+/* storyboard header */
+.sbhead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: end; }
+@media (max-width: 860px) { .sbhead { grid-template-columns: minmax(0, 1fr); } }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; color: var(--muted); margin: 0 0 6px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: 32px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -0.01em; }
+.lede { color: var(--muted); margin: 0; max-width: 62ch; }
+.notes { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
+.notes .n { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.notes b.t { font-size: 15px; }
+.notes .try { font-size: 13px; }
+.notes .try span { font-weight: 600; color: var(--accent); }
+
+/* browser frame */
+.browser { border-radius: 14px; overflow: hidden; border: 1px solid var(--frame); background: var(--panel); box-shadow: 0 24px 50px -30px rgba(10, 30, 20, .45); }
+.chrome { display: flex; align-items: center; gap: 12px; padding: 9px 14px; background: var(--frame); }
+.dots { display: flex; gap: 6px; flex: none; }
+.dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--panel); opacity: .8; }
+.url { flex: 1; min-width: 0; background: var(--panel); border-radius: 8px; padding: 4px 12px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.app { position: relative; display: grid; grid-template-columns: 216px minmax(0, 1fr); height: 780px; }
+@media (max-width: 860px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 82dvh; min-height: 620px; } }
+
+/* sidebar */
+.side { background: var(--side); color: var(--side-ink); display: flex; flex-direction: column; padding: 16px 10px; gap: 2px; overflow-y: auto; }
+.brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 14px; font-family: var(--font-display); font-weight: 800; font-size: 18px; color: #fff; }
+.brand small { font-family: var(--font-body); font-weight: 600; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--side-muted); }
+.brand svg { width: 22px; height: 22px; flex: none; }
+.navgroup { font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--side-muted); padding: 12px 10px 4px; font-weight: 600; }
+.nav { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; color: var(--side-ink); padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.nav:hover { background: var(--side-active); }
+.nav[aria-current="page"] { background: var(--side-active); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--sun); }
+.nav svg { width: 16px; height: 16px; flex: none; opacity: .9; }
+.nav .count { margin-left: auto; background: var(--sun); color: #1b1300; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+.sidefoot { margin-top: auto; padding: 14px 10px 0; font-size: 11px; color: var(--side-muted); }
+@media (max-width: 860px) {
+  .side { flex-direction: row; overflow-x: auto; padding: 8px; gap: 4px; align-items: center; }
+  .brand { padding: 0 8px 0 4px; }
+  .brand small, .navgroup, .sidefoot { display: none; }
+  .nav { width: auto; white-space: nowrap; flex: none; }
+  .nav[aria-current="page"] { box-shadow: inset 0 -3px 0 var(--sun); }
+}
+
+/* main */
+.main { overflow-y: auto; padding: 22px 26px 40px; min-width: 0; }
+@media (max-width: 860px) { .main { padding: 16px 14px 32px; } }
+.vhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.vhead h2 { font-family: var(--font-display); font-weight: 800; font-size: 24px; margin: 0; letter-spacing: -0.01em; }
+.vhead p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.exdata { font-size: 11px; font-weight: 600; color: var(--muted); border: 1px dashed var(--line); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.card h3 { margin: 0 0 2px; font-size: 14px; font-weight: 600; }
+.card .sub { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1000px) { .grid3 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.stack { display: grid; gap: 14px; }
+
+/* kpis */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.kpi .l { font-size: 12px; color: var(--muted); }
+.kpi .v { font-family: var(--font-display); font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.kpi .d { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.kpi .d b { color: var(--good); font-weight: 600; }
+.kpi .d b.neg { color: var(--bad); }
+
+/* bars */
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 84px; gap: 10px; align-items: center; font-size: 13px; }
+@media (max-width: 520px) { .bar { grid-template-columns: 104px minmax(0, 1fr) 70px; font-size: 12px; } }
+.bar .track { height: 12px; }
+.bar .fill { height: 12px; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bar .val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.bar:hover .fill { filter: brightness(1.12); }
+.drop { font-size: 11px; color: var(--muted); padding-left: 160px; margin: -6px 0 -2px; font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) { .drop { padding-left: 114px; } }
+
+/* attention list */
+.alist { display: grid; gap: 8px; }
+.aitem { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); text-align: left; width: 100%; cursor: pointer; }
+.aitem:hover { background: var(--row-hover); }
+.aitem .sev { width: 8px; height: 30px; border-radius: 4px; }
+.aitem small { display: block; color: var(--muted); font-size: 12px; }
+.aitem .go { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+
+/* tables */
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.search { flex: 1 1 220px; min-width: 0; height: 36px; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; background: var(--panel); }
+.select { height: 36px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; background: var(--panel); }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.tab { background: none; border: 0; padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab b { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); margin-left: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--panel); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover td { background: var(--row-hover); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td .muted, .muted { color: var(--muted); }
+td small { display: block; color: var(--muted); font-size: 12px; }
+.nowrap { white-space: nowrap; }
+input.cell { width: 76px; height: 32px; border: 1px solid var(--line); border-radius: 6px; padding: 0 8px; text-align: right; background: var(--panel); font-variant-numeric: tabular-nums; }
+input.cell:focus { border-color: var(--accent); outline: none; }
+
+/* pills */
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; white-space: nowrap; background: var(--chip); color: var(--muted); }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.ok { color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.pill.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.pill.info { color: var(--accent); background: var(--accent-soft); }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; margin: 1px 2px 1px 0; color: var(--muted); }
+
+/* buttons */
+.btn { height: 36px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 13px; padding: 0 14px; cursor: pointer; white-space: nowrap; }
+.btn.ghost { background: var(--panel); color: var(--ink); border-color: var(--line); }
+.btn.danger { background: var(--panel); color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.sm { height: 30px; font-size: 12px; padding: 0 10px; }
+
+/* drawer */
+.scrim { position: absolute; inset: 0; background: rgba(8, 16, 12, .35); z-index: 20; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(460px, 100%); background: var(--panel); z-index: 21; border-left: 1px solid var(--line); display: flex; flex-direction: column; box-shadow: -20px 0 40px -24px rgba(0,0,0,.4); }
+.dhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 18px 20px 12px; border-bottom: 1px solid var(--line); }
+.dhead h3 { font-family: var(--font-display); font-size: 20px; margin: 0; font-weight: 800; letter-spacing: -0.01em; }
+.dhead p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.x { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; flex: none; font-size: 16px; line-height: 1; }
+.dbody { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 20px 24px; display: grid; gap: 16px; align-content: start; }
+.dsec h4 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
+.kv { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 6px 12px; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.narr { background: var(--chip); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+.trace { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.trace li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; position: relative; padding-bottom: 12px; font-size: 13px; }
+.trace li::before { content: ""; position: absolute; left: 10px; top: 20px; bottom: 0; width: 2px; background: var(--line); }
+.trace li:last-child::before { display: none; }
+.trace .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-soft); color: var(--accent); }
+.trace .dot.end { background: var(--accent); color: var(--accent-ink); }
+.trace small { display: block; color: var(--muted); font-size: 12px; }
+.checks { display: grid; gap: 8px; }
+.checks label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 13px; cursor: pointer; }
+.checks input { width: 18px; height: 18px; accent-color: var(--accent); margin: 1px 0 0; }
+.callout { border-radius: 10px; padding: 10px 12px; font-size: 13px; background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.callout.info { background: var(--accent-soft); }
+.field { width: 100%; height: 36px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; background: var(--panel); }
+.formrow { display: grid; gap: 6px; font-size: 12px; font-weight: 600; }
+.calc { font-variant-numeric: tabular-nums; font-size: 13px; }
+
+/* feeds */
+.feed { display: grid; gap: 12px; }
+.feed .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.feed h3 { font-size: 16px; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--chip); border-radius: 8px; padding: 8px 10px; }
+.stat .l { font-size: 11px; color: var(--muted); }
+.stat .v { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.clist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.clist li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; }
+.clist .y { color: var(--good); font-weight: 700; }
+.clist .n { color: var(--bad); font-weight: 700; }
+.clist .p { color: var(--muted); font-weight: 700; }
+
+/* value ratings */
+.thresh { display: grid; gap: 10px; }
+.thresh label { display: grid; grid-template-columns: minmax(0, 1fr) 90px; gap: 10px; align-items: center; font-size: 13px; }
+.thresh .inp { display: flex; align-items: center; gap: 4px; justify-content: flex-end; font-variant-numeric: tabular-nums; }
+.dist { display: grid; gap: 8px; }
+.dist .bar .fill { border-radius: 0 4px 4px 0; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.toggle:last-child { border-bottom: 0; }
+.toggle small { display: block; color: var(--muted); font-size: 12px; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.lock { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+
+/* toast */
+.toast { position: absolute; left: 50%; bottom: 22px; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; z-index: 40; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; transition: opacity .2s, transform .2s; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.001ms !important; } }
+</style>
+
+<div class="wrap">
+  <header class="sbhead">
+    <div>
+      <p class="eyebrow">Admin panel storyboard · clickable prototype</p>
+      <h1>Nestmatch Admin</h1>
+      <p class="lede">The internal console for running the platform: brokerages and agents, buyers, the lead marketplace, pricing rules, MLS feeds, value ratings, vendors and ads, and compliance. All figures are example data.</p>
+    </div>
+    <div class="notes" aria-live="polite">
+      <span class="n" id="noteNum">Screen 1 of 9</span>
+      <b class="t" id="noteTitle">Overview</b>
+      <span id="notePurpose"></span>
+      <span class="try" id="noteTry"></span>
+    </div>
+  </header>
+
+  <div class="browser">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url" id="url">admin.nestmatch.app/overview</span></div>
+    <div class="app" id="app">
+      <nav class="side" id="side" aria-label="Admin sections"></nav>
+      <main class="main" id="main"></main>
+      <div class="scrim" id="scrim" hidden></div>
+      <aside class="drawer" id="drawer" hidden aria-modal="true" role="dialog"></aside>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const usd = n => '$' + Math.round(n).toLocaleString();
+  const ICON = {
+    overview: '<path d="M3 13h6V3H3zM11 21h10V11H11zM3 21h6v-6H3zM11 9h10V3H11z"/>',
+    brokerages: '<path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5M8 9h2M14 9h2M8 13h2M14 13h2"/>',
+    clients: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 010 7M18 14c2.2.7 3.5 2.8 3.5 6"/>',
+    leads: '<path d="M3 4h18l-7 8v7l-4 2v-9z"/>',
+    pricing: '<path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    feeds: '<path d="M4 11a9 9 0 019 9M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1.5"/>',
+    value: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    vendors: '<path d="M3 7h18l-1.5 5h-15zM5 12v8h14v-8M9 20v-5h6v5"/>',
+    compliance: '<path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+  };
+  const VIEWS = [
+    { id: 'overview', name: 'Overview', group: 'Business', purpose: 'The morning check: buyers, leads sold, revenue by stream, the lead funnel, and anything that needs a person today.', tryit: 'Click an item under “Needs attention” to jump straight to it.' },
+    { id: 'brokerages', name: 'Brokerages', group: 'Business', purpose: 'Tenants: every brokerage, its agents, licensed states, MLS memberships, plan and lead spend. A solo agent is a brokerage of one.', tryit: 'Open a brokerage to see its agents, then pause or resume its lead buying.' },
+    { id: 'clients', name: 'Buyers', group: 'Business', purpose: 'Platform-level buyer accounts with their house profile, household, agent links and consent. Contact details stay masked until an admin gives a reason.', tryit: 'Open Jordan Rivera, pick a reason and reveal contact info. The access shows up in Compliance → Audit log.' },
+    { id: 'leads', name: 'Leads', group: 'Marketplace', purpose: 'Every lead sold: buyer leads, agent connections and vendor leads, with the routing trace that explains who got it and why.', tryit: 'Open the disputed lead and refund it, or open the “Under contract” referral and record the closing price.' },
+    { id: 'pricing', name: 'Pricing & rules', group: 'Marketplace', purpose: 'Per-market prices, exclusivity windows and referral percentages, plus routing rules. The compliance rules are locked on.', tryit: 'Change a price and save. The change is written to the audit log.' },
+    { id: 'feeds', name: 'MLS feeds', group: 'Data', purpose: 'Health of each MLS listing feed and its display-rule compliance, plus applications in progress.', tryit: 'The IRES feed is past the 12-hour refresh limit. Click “Refresh now”.' },
+    { id: 'value', name: 'Value ratings', group: 'Data', purpose: 'Tune the value-badge thresholds and the comparable-sales confidence gate, and see how listings would be rated.', tryit: 'Drag the thresholds or raise the minimum comps and watch the distribution change.' },
+    { id: 'vendors', name: 'Vendors & ads', group: 'Data', purpose: 'Moving-service vendors who buy leads, and settlement-service advertisers who must pass a RESPA review before their ads run.', tryit: 'Open Peak Home Loans, complete the review checklist and approve the ad.' },
+    { id: 'compliance', name: 'Compliance', group: 'Trust', purpose: 'Privacy requests with due dates, the consent ledger, and an audit log of every admin action.', tryit: 'Mark a privacy request complete, then check the audit log for your earlier actions.' },
+  ];
+
+  /* ---------- example data ---------- */
+  const BROKERAGES = [
+    { id: 'b2', name: 'Front Range Homes', agents: 31, states: ['CO'], mls: ['REcolorado'], plan: 'Team · 31 seats', leads: 388, spend: 29840, status: 'Active' },
+    { id: 'b1', name: 'Summit Ridge Realty', agents: 14, states: ['CO', 'WY'], mls: ['REcolorado', 'IRES'], plan: 'Pro · 14 seats', leads: 212, spend: 16960, status: 'Active' },
+    { id: 'b3', name: 'Cherry Creek Partners', agents: 9, states: ['CO'], mls: ['REcolorado'], plan: 'Pro · 9 seats', leads: 104, spend: 8320, status: 'Active' },
+    { id: 'b4', name: 'Dana Okafor Real Estate', agents: 1, states: ['CO'], mls: ['REcolorado'], plan: 'Solo', leads: 22, spend: 1760, status: 'Active', note: 'Brokerage of one' },
+    { id: 'b5', name: 'Boulder Valley Brokers', agents: 6, states: ['CO'], mls: ['IRES'], plan: 'Pro · 6 seats', leads: 0, spend: 0, status: 'Paused', note: 'Paused: card declined Nov 18' },
+    { id: 'b6', name: 'Nestmatch Realty', agents: 3, states: ['CO', 'AZ', 'TX'], mls: ['REcolorado', 'IRES'], plan: 'House brokerage', leads: 0, spend: 0, status: 'Internal', note: 'Sponsors MLS feeds; receives referral fees' },
+  ];
+  const AGENT_POOL = ['Ana Ruiz', 'Marcus Webb', 'Lena Park', 'Diego Alvarez', 'Hannah Cole', 'Ravi Menon', 'Grace Kim', 'Owen Brooks'];
+  const agentsFor = b => b.id === 'b4'
+    ? [{ name: 'Dana Okafor', role: 'Designated broker', markets: 'Denver central', clients: 18, leads: 22 }]
+    : AGENT_POOL.slice(0, Math.min(4, b.agents)).map((n, i) => ({ name: n, role: i === 0 ? 'Designated broker' : 'Agent', markets: ['Denver central', 'Lakewood / Golden', 'Aurora', 'Boulder County'].at(i % 4), clients: 40 - i * 7, leads: Math.round(b.leads / Math.max(1, b.agents) * (1.6 - i * .2)) }));
+
+  const CLIENTS = [
+    { id: 'c1', name: 'Jordan Rivera', email: 'jordan.rivera@example.com', phone: '(555) 014-2290', market: '80206 · Denver', agent: 'Dana Okafor', household: 'Rivera household (2)', members: 'Jordan Rivera (primary), Sam Rivera (partner)', saves: 14, removes: 22, consent: 'Agent + vendors', consentOk: true, last: '2 hours ago',
+      criteria: 'Free standing · within 5 mi of 80206 · 2+ bd · 2+ ba · $350K–$650K · pre-approved · moving in 3–6 months',
+      narrative: 'Looking for a free standing home within 5 mi of 80206. Need at least 2 bedrooms and 2+ bathrooms, plus home office and fenced yard. Budget $350K to $650K, pre-approved. Planning to move in 3–6 months.' },
+    { id: 'c2', name: 'Priya Shah', email: 'priya.s@example.com', phone: '(555) 018-7741', market: 'Lakewood', agent: null, household: '—', members: '—', saves: 6, removes: 9, consent: 'Agent leads only', consentOk: true, last: 'Yesterday',
+      criteria: 'Condo or attached · Lakewood · 2+ bd · $280K–$420K · need a lender', narrative: 'First home. Want a low-maintenance condo or townhome near light rail, with in-unit laundry.' },
+    { id: 'c3', name: 'Marcus Lee', email: 'mlee@example.com', phone: '(555) 011-0932', market: 'Cherry Creek SD', agent: 'Ana Ruiz · Front Range Homes', household: 'Lee household (3)', members: 'Marcus Lee, Jae Lee, Min Lee (viewer)', saves: 31, removes: 40, consent: 'Agent + vendors', consentOk: true, last: '5 hours ago',
+      criteria: 'Free standing · Cherry Creek School District · 4+ bd · $650K–$900K · cash', narrative: 'Family of four moving from Seattle. Schools first, then a yard and a short drive to the Tech Center.' },
+    { id: 'c4', name: 'Elena Petrova', email: 'elena.p@example.com', phone: '(555) 016-4410', market: '80220 · Denver', agent: null, household: '—', members: '—', saves: 3, removes: 11, consent: 'None (browsing only)', consentOk: false, last: '3 days ago',
+      criteria: 'Any type · 80220 · 1+ bd · $250K–$400K', narrative: 'Just browsing for now.' },
+    { id: 'c5', name: 'Tomás Garcia', email: 'tgarcia@example.com', phone: '(555) 013-5562', market: 'Aurora', agent: 'Lena Park · Cherry Creek Partners', household: '—', members: '—', saves: 9, removes: 7, consent: 'Agent + vendors', consentOk: true, last: 'Today',
+      criteria: 'Attached · Aurora · 3+ bd · $380K–$520K · pre-approved', narrative: 'Townhome with a garage, close to Buckley. Moving within 3 months.' },
+    { id: 'c6', name: 'Sam Rivera', email: 'sam.rivera@example.com', phone: '(555) 014-2291', market: '80206 · Denver', agent: 'Dana Okafor', household: 'Rivera household (2)', members: 'Jordan Rivera (primary), Sam Rivera (partner)', saves: 19, removes: 15, consent: 'Agent only', consentOk: true, last: '1 hour ago',
+      criteria: 'Free standing or attached · 80206 · 3+ bd · $400K–$650K', narrative: 'Walkability matters most. Needs a yard for the dog.' },
+  ];
+
+  const LEADS = [
+    { id: 'L-20481', type: 'Buyer lead', client: 'P. Shah', market: 'Lakewood / Golden', property: 'Search profile', to: 'Front Range Homes · Ana Ruiz', model: 'flat', price: 70, status: 'Delivered', created: 'Nov 22, 9:14 AM',
+      trace: [['Consent on file', 'Agent leads, granted Nov 2 (text v3)'], ['Buyer has an agent?', 'No'], ['Saved a listing whose agent buys leads?', 'No'], ['Sold to market buyer', 'Front Range Homes holds Lakewood / Golden; exclusive for 30 days']] },
+    { id: 'L-20477', type: 'Agent connection', client: 'J. Rivera', market: 'Denver central', property: '4120 Larkspur Lane', to: 'Summit Ridge Realty ↔ Dana Okafor', model: 'flat', price: 35, status: 'Accepted', created: 'Nov 22, 8:02 AM',
+      trace: [['Consent on file', 'Agent + vendors, granted Oct 30 (text v3)'], ['Buyer has an agent?', 'Yes: Dana Okafor (active buyer’s agent)'], ['Listing agent buys leads?', 'Yes: Summit Ridge Realty'], ['Agent connection', 'Listing agent introduced to Dana Okafor; buyer contact withheld']] },
+    { id: 'L-20470', type: 'Vendor lead', client: 'M. Lee', market: 'Cherry Creek SD', property: 'Move date Jan 15', to: 'Mile High Movers', model: 'flat', price: 18, status: 'Delivered', created: 'Nov 21, 4:40 PM',
+      trace: [['Consent on file', 'Vendors: movers, granted Nov 10'], ['Trigger', 'Status changed to “Under contract”'], ['Vendor lead', 'Sent to Mile High Movers (Denver metro)']] },
+    { id: 'L-20462', type: 'Buyer lead', client: 'T. Garcia', market: 'Aurora', property: 'Search profile', to: 'Cherry Creek Partners · Lena Park', model: 'referral', price: null, status: 'Under contract', created: 'Nov 3, 11:20 AM',
+      trace: [['Consent on file', 'Agent + vendors, granted Nov 1'], ['Buyer has an agent?', 'No'], ['Referral market', 'Aurora sold on referral: 25% of buyer-agent commission'], ['Referral agreement', 'Signed by Cherry Creek Partners and Nestmatch Realty']] },
+    { id: 'L-20455', type: 'Agent connection', client: 'M. Lee', market: 'Cherry Creek SD', property: '17 Juniper Court', to: 'Front Range Homes ↔ Ana Ruiz', model: 'flat', price: 35, status: 'Disputed', created: 'Nov 20, 2:05 PM', dispute: 'Front Range Homes says the buyer’s agent is in their own brokerage, so no connection was needed.',
+      trace: [['Consent on file', 'Agent + vendors'], ['Buyer has an agent?', 'Yes: Ana Ruiz'], ['Listing agent buys leads?', 'Yes: Front Range Homes'], ['Agent connection', 'Created, but both agents are in the same brokerage']] },
+    { id: 'L-20431', type: 'Buyer lead', client: 'K. Nguyen', market: 'Denver central', property: 'Search profile', to: 'Summit Ridge Realty · Marcus Webb', model: 'flat', price: 80, status: 'Refunded', created: 'Nov 16, 10:48 AM',
+      trace: [['Consent on file', 'Agent leads'], ['Buyer has an agent?', 'No'], ['Sold to market buyer', 'Summit Ridge Realty'], ['Refunded', 'Invalid phone number']] },
+    { id: 'L-20398', type: 'Buyer lead', client: 'A. Brooks', market: 'Boulder County', property: 'Search profile', to: 'Summit Ridge Realty · Lena Park', model: 'referral', price: null, status: 'Closed', closing: 742000, created: 'Sep 30, 3:12 PM',
+      trace: [['Consent on file', 'Agent leads'], ['Buyer has an agent?', 'No'], ['Referral market', 'Boulder County: 35% of buyer-agent commission'], ['Closed', 'Sale closed Nov 14 at $742,000']] },
+  ];
+
+  const PRICING = [
+    { market: 'Denver central', buyer: 80, conn: 35, vendor: 18, excl: 30, ref: 30 },
+    { market: 'Lakewood / Golden', buyer: 70, conn: 30, vendor: 16, excl: 30, ref: 30 },
+    { market: 'Aurora', buyer: 60, conn: 25, vendor: 15, excl: 21, ref: 25 },
+    { market: 'Boulder County', buyer: 95, conn: 40, vendor: 20, excl: 30, ref: 35 },
+  ];
+  const marketRef = m => (PRICING.find(p => p.market === m) || PRICING[0]).ref;
+
+  const FEEDS = [
+    { id: 'f1', name: 'REcolorado', area: 'Denver metro and most of Colorado', status: 'Healthy', cls: 'ok', api: 'RESO Web API', refreshed: '22 min ago', listings: 18442, idxOut: 312, avmOut: 1208, sold: 'VOW feed', checks: [['y', 'Listing brokerage shown on every listing'], ['y', 'MLS disclaimer and logo shown'], ['y', 'Refreshed within 12 hours'], ['y', 'IDX opt-outs hidden']] },
+    { id: 'f2', name: 'IRES', area: 'Northern Colorado and Boulder', status: 'Stale', cls: 'warn', api: 'RESO Web API', refreshed: '14 h 10 min ago', listings: 6105, idxOut: 98, avmOut: 340, sold: 'None (value ratings off)', checks: [['y', 'Listing brokerage shown on every listing'], ['y', 'MLS disclaimer and logo shown'], ['n', 'Refreshed within 12 hours'], ['y', 'IDX opt-outs hidden']] },
+    { id: 'f3', name: 'Pikes Peak MLS', area: 'Colorado Springs', status: 'Application', cls: '', api: 'RESO Web API', refreshed: '—', listings: 0, idxOut: 0, avmOut: 0, sold: '—', checks: [['y', 'Nestmatch Realty joined the MLS'], ['y', 'Brokerage authorized Nestmatch as IDX vendor'], ['p', 'Data license signed'], ['p', 'MLS compliance review']] },
+  ];
+
+  const VENDORS = [
+    { id: 'v1', name: 'Mile High Movers', cat: 'Mover', area: 'Denver metro', leads: 96, spend: 1728, status: 'Active', cls: 'ok' },
+    { id: 'v2', name: 'Sparkle Move-Out Cleaning', cat: 'Cleaner', area: 'Denver metro', leads: 61, spend: 976, status: 'Active', cls: 'ok' },
+    { id: 'v3', name: 'Staged to Sell Co.', cat: 'Stager', area: 'Denver, Boulder', leads: 22, spend: 440, status: 'Active', cls: 'ok' },
+    { id: 'v4', name: 'Fix-It Front Range', cat: 'Handyman', area: 'Denver metro', leads: 47, spend: 705, status: 'Active', cls: 'ok' },
+    { id: 'v5', name: 'Peak Home Loans', cat: 'Lender', area: 'Colorado', leads: 0, spend: 0, status: 'RESPA review', cls: 'warn', respa: true },
+    { id: 'v6', name: 'Keystone Title & Abstract', cat: 'Title / abstract', area: 'Colorado', leads: 0, spend: 0, status: 'Ads only', cls: 'info', respa: true },
+    { id: 'v7', name: 'ClearView Inspections', cat: 'Inspector', area: 'Denver metro', leads: 0, spend: 0, status: 'Ads only', cls: 'info', respa: true },
+  ];
+  const ADS = [
+    { slot: 'Swipe deck card (every 12th)', who: 'Keystone Title & Abstract', market: 'Denver central', fee: 2400, period: 'Nov 1 – Nov 30', imp: 84200 },
+    { slot: 'Listing page sidebar', who: 'ClearView Inspections', market: 'All Colorado', fee: 1800, period: 'Nov 1 – Dec 31', imp: 61900 },
+    { slot: 'Wrap-up screen', who: 'Peak Home Loans', market: 'All Colorado', fee: 3000, period: 'Starts after approval', imp: 0 },
+  ];
+
+  const PRIVACY = [
+    { id: 'PR-121', type: 'Delete my data', client: 'Elena Petrova', state: 'CO', received: 'Nov 20', due: 'Jan 4', left: 43, status: 'Open' },
+    { id: 'PR-118', type: 'Opt out of data sale', client: 'Wes Hollis', state: 'CA', received: 'Nov 9', due: 'Nov 24', left: 2, status: 'In progress' },
+    { id: 'PR-117', type: 'Access my data', client: 'Priya Shah', state: 'CO', received: 'Nov 7', due: 'Dec 22', left: 30, status: 'In progress' },
+    { id: 'PR-112', type: 'Delete my data', client: 'R. Okonkwo', state: 'TX', received: 'Oct 28', due: 'Dec 12', left: 20, status: 'Open' },
+  ];
+  const CONSENTS = [
+    ['Jordan Rivera', 'Agent contact', 'Dana Okafor', 'v3', 'Oct 30', '—'],
+    ['Jordan Rivera', 'Vendor contact', 'Movers, cleaners', 'v3', 'Oct 30', '—'],
+    ['Priya Shah', 'Agent contact', 'Agents in Lakewood / Golden', 'v3', 'Nov 2', '—'],
+    ['Marcus Lee', 'Vendor contact', 'Movers', 'v3', 'Nov 10', '—'],
+    ['Elena Petrova', 'Agent contact', 'Agents in 80220', 'v2', 'Sep 14', 'Nov 20'],
+    ['Sam Rivera', 'Agent contact', 'Dana Okafor', 'v3', 'Oct 31', '—'],
+  ];
+  const AUDIT = [
+    { when: 'Nov 22, 7:58 AM', who: 'R. Patel (ops)', what: 'Paused lead buying for Boulder Valley Brokers', why: 'Card declined' },
+    { when: 'Nov 21, 3:15 PM', who: 'K. Moss (compliance)', what: 'Viewed contact info for Elena Petrova', why: 'Data request PR-121' },
+    { when: 'Nov 21, 9:02 AM', who: 'System', what: 'Updated consent text to v3 for new sign-ups', why: 'Counsel-approved wording' },
+  ];
+
+  /* ---------- app state ---------- */
+  const st = { view: 'overview', clientQ: '', leadTab: 'All', compTab: 'privacy', revealed: {}, th: [-5, -2, 2, 5], minComps: 3, idxPositiveOnly: true };
+  const ME = 'You (ops admin)';
+  const nowStamp = () => 'Nov 22, ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const audit = (what, why) => AUDIT.unshift({ when: nowStamp(), who: ME, what, why });
+
+  const toastEl = $('#toast');
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastEl._t); toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 2400); }
+
+  /* ---------- sidebar ---------- */
+  function renderSide() {
+    const counts = { leads: LEADS.filter(l => l.status === 'Disputed').length, feeds: FEEDS.filter(f => f.cls === 'warn').length, vendors: VENDORS.filter(v => v.status === 'RESPA review').length, compliance: PRIVACY.filter(p => p.status !== 'Complete' && p.left <= 7).length };
+    let html = `<div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg><span>Nestmatch<br><small>Admin</small></span></div>`;
+    let g = '';
+    VIEWS.forEach(v => {
+      if (v.group !== g) { g = v.group; html += `<div class="navgroup">${g}</div>`; }
+      const c = counts[v.id];
+      html += `<button class="nav" data-view="${v.id}"${v.id === st.view ? ' aria-current="page"' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[v.id]}</svg>${v.name}${c ? `<span class="count">${c}</span>` : ''}</button>`;
+    });
+    html += `<div class="sidefoot">Signed in as ops admin<br>Example data · Nov 22, 2026</div>`;
+    $('#side').innerHTML = html;
+  }
+
+  function go(id) {
+    st.view = id; closeDrawer();
+    const i = VIEWS.findIndex(v => v.id === id), v = VIEWS[i];
+    $('#noteNum').textContent = `Screen ${i + 1} of ${VIEWS.length}`;
+    $('#noteTitle').textContent = v.name;
+    $('#notePurpose').textContent = v.purpose;
+    $('#noteTry').innerHTML = `<span>Try it:</span> ${v.tryit}`;
+    $('#url').textContent = 'admin.nestmatch.app/' + id;
+    renderSide(); render(); $('#main').scrollTop = 0;
+  }
+  const head = (title, sub, extra = '') => `<div class="vhead"><div><h2>${title}</h2><p>${sub}</p></div><div class="row">${extra}<span class="exdata">Example data</span></div></div>`;
+
+  /* ---------- views ---------- */
+  const R = {};
+  R.overview = () => {
+    const streams = [['Agent leads', 71400], ['IDX websites', 38900], ['Moving services', 22150], ['Settlement ads', 12600], ['Market data', 3270]];
+    const total = streams.reduce((a, s) => a + s[1], 0), max = streams[0][1];
+    const funnel = [['Finished interview', 3412], ['Gave contact consent', 2980], ['Leads created', 2210], ['Leads sold', 1964]];
+    const attn = [
+      ['bad', 'IRES feed is past the 12-hour refresh limit', 'Last refresh 14 h 10 min ago. Listings may show stale prices.', 'feeds'],
+      ['warn', 'Privacy request PR-118 is due in 2 days', 'Opt out of data sale · California resident', 'compliance'],
+      ['warn', 'Lead L-20455 is disputed', 'Front Range Homes: both agents are in the same brokerage', 'leads'],
+      ['info', 'Peak Home Loans is waiting for RESPA review', 'Lender ad for the wrap-up screen, $3,000/month', 'vendors'],
+    ];
+    const sevColor = { bad: 'var(--bad)', warn: 'var(--warn)', info: 'var(--accent)' };
+    return head('Overview', 'November 2026, month to date') + `
+      <div class="kpis">
+        <div class="kpi"><div class="l">Active buyers (30 days)</div><div class="v">12,480</div><div class="d"><b>+8.2%</b> vs. October</div></div>
+        <div class="kpi"><div class="l">Leads sold</div><div class="v">1,964</div><div class="d"><b>+11.4%</b> vs. October</div></div>
+        <div class="kpi"><div class="l">Revenue to date</div><div class="v">${usd(total)}</div><div class="d">Target $165,000</div></div>
+        <div class="kpi"><div class="l">Refund rate</div><div class="v">2.1%</div><div class="d"><b class="neg">+0.4 pts</b> vs. October</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3>Revenue by stream</h3><p class="sub">${usd(total)} month to date</p>
+          <div class="bars">${streams.map(([n, v]) => `<div class="bar" title="${n}: ${usd(v)} (${(v / total * 100).toFixed(1)}%)"><span>${n}</span><span class="track"><span class="fill" style="display:block;width:${v / max * 100}%"></span></span><span class="val">${usd(v)}</span></div>`).join('')}</div>
+        </div>
+        <div class="card"><h3>Lead funnel</h3><p class="sub">Buyers who started in November</p>
+          <div class="bars">${funnel.map(([n, v], i) => (i ? `<div class="drop">↓ ${(v / funnel[i - 1][1] * 100).toFixed(0)}% continue</div>` : '') + `<div class="bar" title="${n}: ${v.toLocaleString()}"><span>${n}</span><span class="track"><span class="fill" style="display:block;width:${v / funnel[0][1] * 100}%"></span></span><span class="val">${v.toLocaleString()}</span></div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px"><h3>Needs attention</h3><p class="sub">Sorted by urgency</p>
+        <div class="alist">${attn.map(([s, t, d, v]) => `<button class="aitem" data-view="${v}"><span class="sev" style="background:${sevColor[s]}"></span><span><b>${t}</b><small>${d}</small></span><span class="go">Open →</span></button>`).join('')}</div>
+      </div>`;
+  };
+
+  R.brokerages = () => {
+    const spl = { Active: 'ok', Paused: 'warn', Internal: 'info' };
+    return head('Brokerages', `${BROKERAGES.length} tenants · ${BROKERAGES.reduce((a, b) => a + b.agents, 0)} agents`, '<button class="btn" data-act="invite">Invite brokerage</button>') + `
+      <div class="tablewrap"><table><thead><tr><th>Brokerage</th><th>Plan</th><th>Licensed in</th><th>MLS memberships</th><th class="num">Leads (30d)</th><th class="num">Spend (30d)</th><th>Status</th></tr></thead><tbody>
+      ${BROKERAGES.map(b => `<tr class="click" data-open="brokerage" data-id="${b.id}"><td><b>${b.name}</b>${b.note ? `<small>${b.note}</small>` : ''}</td><td class="nowrap">${b.plan}</td><td>${b.states.map(s => `<span class="tag">${s}</span>`).join('')}</td><td>${b.mls.map(s => `<span class="tag">${s}</span>`).join('')}</td><td class="num">${b.leads}</td><td class="num">${usd(b.spend)}</td><td><span class="pill ${spl[b.status]}">${b.status}</span></td></tr>`).join('')}
+      </tbody></table></div>`;
+  };
+
+  R.clients = () => {
+    const q = st.clientQ.toLowerCase();
+    const rows = CLIENTS.filter(c => !q || (c.name + c.market + (c.agent || 'unassigned')).toLowerCase().includes(q));
+    return head('Buyers', '12,480 active in the last 30 days · showing a sample') + `
+      <div class="toolbar"><input class="search" id="clientQ" placeholder="Search by name, market or agent" value="${st.clientQ}" aria-label="Search buyers"></div>
+      <div class="tablewrap"><table><thead><tr><th>Buyer</th><th>Market</th><th>Agent</th><th>Household</th><th class="num">Saved / removed</th><th>Consent</th><th>Last active</th></tr></thead><tbody>
+      ${rows.map(c => `<tr class="click" data-open="client" data-id="${c.id}"><td><b>${c.name}</b></td><td>${c.market}</td><td>${c.agent || '<span class="pill warn">Unassigned</span>'}</td><td>${c.household}</td><td class="num">${c.saves} / ${c.removes}</td><td><span class="pill ${c.consentOk ? 'ok' : ''}">${c.consent}</span></td><td class="nowrap muted">${c.last}</td></tr>`).join('') || `<tr><td colspan="7" class="muted">No buyers match “${st.clientQ}”.</td></tr>`}
+      </tbody></table></div>`;
+  };
+
+  const leadPrice = l => l.model === 'referral'
+    ? (l.closing ? usd(l.closing * 0.025 * marketRef(l.market) / 100) : `${marketRef(l.market)}% referral`)
+    : usd(l.price);
+  const leadPill = s => ({ Delivered: 'info', Accepted: 'ok', Closed: 'ok', 'Under contract': 'info', Disputed: 'bad', Refunded: '' }[s] ?? '');
+  R.leads = () => {
+    const types = ['All', 'Buyer lead', 'Agent connection', 'Vendor lead'];
+    const rows = LEADS.filter(l => st.leadTab === 'All' || l.type === st.leadTab);
+    return head('Leads', 'Every lead sold, with how it was routed') + `
+      <div class="tabs" role="tablist">${types.map(t => `<button class="tab" role="tab" data-ltab="${t}" aria-selected="${t === st.leadTab}">${t === 'All' ? 'All' : t + 's'}<b>${t === 'All' ? LEADS.length : LEADS.filter(l => l.type === t).length}</b></button>`).join('')}</div>
+      <div class="tablewrap"><table><thead><tr><th>Lead</th><th>Type</th><th>Buyer</th><th>Market</th><th>Sold to</th><th class="num">Price</th><th>Status</th></tr></thead><tbody>
+      ${rows.map(l => `<tr class="click" data-open="lead" data-id="${l.id}"><td class="nowrap"><b>${l.id}</b><small>${l.created}</small></td><td class="nowrap">${l.type}</td><td>${l.client}</td><td>${l.market}<small>${l.property}</small></td><td>${l.to}</td><td class="num nowrap">${leadPrice(l)}</td><td><span class="pill ${leadPill(l.status)}">${l.status}</span></td></tr>`).join('')}
+      </tbody></table></div>
+      <p class="muted" style="font-size:12px;margin-top:10px">Buyer names are shortened in lists. Full contact details are only in the Buyers screen, behind a logged reason.</p>`;
+  };
+
+  R.pricing = () => head('Pricing & rules', 'Changes apply to new leads only', '<button class="btn" data-act="savePricing">Save changes</button>') + `
+    <div class="tablewrap"><table><thead><tr><th>Market</th><th class="num">Buyer lead</th><th class="num">Agent connection</th><th class="num">Vendor lead</th><th class="num">Exclusive for (days)</th><th class="num">Referral (% of commission)</th></tr></thead><tbody>
+    ${PRICING.map((p, i) => `<tr><td><b>${p.market}</b></td>${['buyer', 'conn', 'vendor', 'excl', 'ref'].map(k => `<td class="num"><input class="cell" type="number" min="0" data-price="${i}" data-k="${k}" value="${p[k]}" aria-label="${p.market} ${k}"></td>`).join('')}</tr>`).join('')}
+    </tbody></table></div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card"><h3>Routing rules</h3><p class="sub">Applied in this order to every lead</p>
+        <div class="toggle"><span><b>Consent required before any lead</b><small>Checks the consent ledger for the exact purpose and recipient.</small></span><span class="lock">🔒 Always on</span></div>
+        <div class="toggle"><span><b>Never sell a represented buyer to another agent</b><small>Creates an agent connection instead (NAR Code of Ethics, Article 16).</small></span><span class="lock">🔒 Always on</span></div>
+        <div class="toggle"><label for="rSame" style="cursor:pointer"><b>Skip connections inside one brokerage</b><small>No charge when the listing and buyer’s agents share a brokerage.</small></label><input type="checkbox" id="rSame"></div>
+        <div class="toggle"><label for="rListing" style="cursor:pointer"><b>Offer unrepresented buyers to the listing agent first</b><small>When the buyer saved that agent’s listing.</small></label><input type="checkbox" id="rListing" checked></div>
+      </div>
+      <div class="card"><h3>Referral assumptions</h3><p class="sub">Used to estimate referral fees before a sale closes</p>
+        <div class="kv"><dt>Buyer-agent commission</dt><dd>2.5% of sale price (estimate)</dd><dt>Fee paid to</dt><dd>Nestmatch Realty (licensed brokerage)</dd><dt>Agreement</dt><dd>Signed referral agreement required before the lead is delivered</dd><dt>Verification</dt><dd>Closing statement uploaded within 30 days of close</dd></div>
+      </div>
+    </div>`;
+
+  R.feeds = () => head('MLS feeds', 'Listing data comes from each MLS through Nestmatch Realty’s memberships') + `
+    <div class="grid3">${FEEDS.map(f => `
+      <div class="card feed">
+        <div class="top"><div><h3>${f.name}</h3><p class="sub" style="margin:0">${f.area}</p></div><span class="pill ${f.cls}">${f.status}</span></div>
+        <div class="stats">
+          <div class="stat"><div class="l">Active listings</div><div class="v">${f.listings.toLocaleString()}</div></div>
+          <div class="stat"><div class="l">Last refresh</div><div class="v" style="${f.cls === 'warn' ? 'color:var(--bad)' : ''}">${f.refreshed}</div></div>
+          <div class="stat"><div class="l">IDX opt-outs</div><div class="v">${f.idxOut.toLocaleString()}</div></div>
+          <div class="stat"><div class="l">Estimate opt-outs</div><div class="v">${f.avmOut.toLocaleString()}</div></div>
+        </div>
+        <div class="muted" style="font-size:12px">${f.api} · Sold data: ${f.sold}</div>
+        <ul class="clist">${f.checks.map(([s, t]) => `<li><span class="${s}">${s === 'y' ? '✓' : s === 'n' ? '✕' : '○'}</span><span>${t}</span></li>`).join('')}</ul>
+        <div class="row">${f.status === 'Application' ? '<button class="btn ghost sm" data-act="nudge">Email MLS contact</button>' : `<button class="btn ${f.cls === 'warn' ? '' : 'ghost'} sm" data-act="refresh" data-id="${f.id}">Refresh now</button><button class="btn danger sm" data-act="pauseFeed" data-id="${f.id}">Pause display</button>`}</div>
+      </div>`).join('')}</div>`;
+
+  // Deterministic sample of listings: list price vs estimate (%), and number of comparable sales
+  const SAMPLE = (() => { let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647; return Array.from({ length: 800 }, () => { const u = rnd(), v = rnd(); return { pct: 1 + 4.2 * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v), comps: Math.floor(14 * Math.sqrt(rnd())) }; }); })();
+  const BADGES = [['Great value', 'var(--good)'], ['Good value', 'color-mix(in srgb, var(--good) 55%, var(--panel))'], ['Fair price', 'var(--muted)'], ['Above market', 'var(--warn)'], ['Room to negotiate', 'var(--bad)'], ['No rating', 'var(--line)']];
+  function dist() {
+    const [a, b, c, d] = st.th, n = [0, 0, 0, 0, 0, 0];
+    SAMPLE.forEach(x => { if (x.comps < st.minComps) n[5]++; else n[x.pct <= a ? 0 : x.pct <= b ? 1 : x.pct < c ? 2 : x.pct < d ? 3 : 4]++; });
+    return n;
+  }
+  function distHTML() {
+    const n = dist(), max = Math.max(...n), rated = SAMPLE.length - n[5];
+    return `<div class="dist bars">${BADGES.map(([name, col], i) => `<div class="bar" title="${name}: ${n[i]} listings (${(n[i] / SAMPLE.length * 100).toFixed(1)}%)"><span><i class="sw" style="background:${col}"></i>${name}</span><span class="track"><span class="fill" style="display:block;background:${col};width:${n[i] / max * 100}%"></span></span><span class="val">${(n[i] / SAMPLE.length * 100).toFixed(0)}%</span></div>`).join('')}</div>
+      <p class="muted" style="font-size:12px;margin:12px 0 0">${rated} of ${SAMPLE.length} sample listings get a badge (${(rated / SAMPLE.length * 100).toFixed(0)}% coverage).</p>`;
+  }
+  R.value = () => {
+    const labels = ['Great value if list is at or below', 'Good value if at or below', 'Fair price if below', 'Above market if below'];
+    return head('Value ratings', 'List price compared with an estimate from recent comparable sales') + `
+      <div class="grid2">
+        <div class="stack">
+          <div class="card"><h3>Badge thresholds</h3><p class="sub">Percent difference between list price and estimate. Anything above the last line is “Room to negotiate”.</p>
+            <div class="thresh">${labels.map((l, i) => `<label><span>${l}</span><span class="inp"><input class="cell" type="number" step="0.5" data-th="${i}" value="${st.th[i]}" aria-label="${l}">%</span></label>`).join('')}
+              <label><span>Minimum comparable sales for a badge</span><span class="inp"><input class="cell" type="number" min="1" max="10" data-comps value="${st.minComps}" aria-label="Minimum comparable sales"></span></label>
+            </div>
+          </div>
+          <div class="card"><h3>Where badges show</h3>
+            <div class="toggle"><label for="vIdx" style="cursor:pointer"><b>Agent IDX websites: positive badges only</b><small>Great value, Good value and Fair price. Others show nothing.</small></label><input type="checkbox" id="vIdx" ${st.idxPositiveOnly ? 'checked' : ''}></div>
+            <div class="toggle"><span><b>Respect listing-broker opt-outs</b><small>1,548 listings across feeds have estimates turned off.</small></span><span class="lock">🔒 Always on</span></div>
+            <div class="toggle"><span><b>Buyer app wording for the top tier</b><small>“Room to negotiate”, never “Overpriced”.</small></span><span class="lock">Set in copy</span></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card"><h3>How listings would be rated</h3><p class="sub">800 sample listings · updates as you edit</p><div id="distBox">${distHTML()}</div></div>
+          <div class="card"><h3>Estimate accuracy</h3><p class="sub">Estimate vs. later sale price, last 90 days</p>
+            <div class="kv"><dt>Median error</dt><dd><b>4.1%</b> (1,184 sales)</dd><dt>Within ±5%</dt><dd>63% of sales</dd><dt>Model version</dt><dd>avm-2026.11 · trained Nov 15</dd><dt>Sold-data feeds</dt><dd>REcolorado (VOW). IRES has none, so its listings get no badge.</dd></div>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  R.vendors = () => head('Vendors & ads', 'Lead buyers for moving services, and settlement-service advertisers') + `
+    <div class="tablewrap"><table><thead><tr><th>Vendor</th><th>Category</th><th>Service area</th><th class="num">Leads (30d)</th><th class="num">Spend (30d)</th><th>Status</th></tr></thead><tbody>
+    ${VENDORS.map(v => `<tr class="click" data-open="vendor" data-id="${v.id}"><td><b>${v.name}</b>${v.respa ? '<small>Settlement service: ads only, no per-lead deals</small>' : ''}</td><td>${v.cat}</td><td>${v.area}</td><td class="num">${v.leads}</td><td class="num">${usd(v.spend)}</td><td><span class="pill ${v.cls}">${v.status}</span></td></tr>`).join('')}
+    </tbody></table></div>
+    <h3 style="font-size:14px;margin:18px 0 8px">Ad placements</h3>
+    <div class="tablewrap"><table><thead><tr><th>Slot</th><th>Advertiser</th><th>Market</th><th class="num">Flat fee / month</th><th>Period</th><th class="num">Impressions (30d)</th></tr></thead><tbody>
+    ${ADS.map(a => `<tr><td>${a.slot}</td><td>${a.who}</td><td>${a.market}</td><td class="num">${usd(a.fee)}</td><td class="nowrap">${a.period}</td><td class="num">${a.imp ? a.imp.toLocaleString() : '—'}</td></tr>`).join('')}
+    </tbody></table></div>`;
+
+  R.compliance = () => {
+    const tabs = [['privacy', 'Privacy requests', PRIVACY.filter(p => p.status !== 'Complete').length], ['consent', 'Consent ledger', CONSENTS.length], ['audit', 'Audit log', AUDIT.length]];
+    let body = '';
+    if (st.compTab === 'privacy') body = `<div class="tablewrap"><table><thead><tr><th>Request</th><th>Type</th><th>Person</th><th>State</th><th>Received</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>
+      ${PRIVACY.map(p => `<tr><td class="nowrap"><b>${p.id}</b></td><td>${p.type}</td><td>${p.client}</td><td>${p.state}</td><td class="nowrap">${p.received}</td><td class="nowrap">${p.due}${p.status !== 'Complete' ? `<small>${p.left} days left</small>` : ''}</td><td><span class="pill ${p.status === 'Complete' ? 'ok' : p.left <= 7 ? 'bad' : 'warn'}">${p.status}</span></td><td>${p.status !== 'Complete' ? `<button class="btn ghost sm" data-act="completePR" data-id="${p.id}">Mark complete</button>` : ''}</td></tr>`).join('')}
+      </tbody></table></div><p class="muted" style="font-size:12px;margin-top:10px">Deadlines follow the person’s state law. Deleting a buyer also removes them from household lists and withdraws undelivered leads.</p>`;
+    if (st.compTab === 'consent') body = `<div class="tablewrap"><table><thead><tr><th>Person</th><th>Purpose</th><th>Recipient</th><th>Text version</th><th>Granted</th><th>Revoked</th></tr></thead><tbody>
+      ${CONSENTS.map(c => `<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td>${c[2]}</td><td><span class="tag">${c[3]}</span></td><td class="nowrap">${c[4]}</td><td class="nowrap">${c[5] === '—' ? '<span class="muted">—</span>' : `<span class="pill bad">${c[5]}</span>`}</td></tr>`).join('')}
+      </tbody></table></div><p class="muted" style="font-size:12px;margin-top:10px">Each record stores the exact text the person saw. Version v3 has been live since Nov 21.</p>`;
+    if (st.compTab === 'audit') body = `<div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Reason</th></tr></thead><tbody>
+      ${AUDIT.map(a => `<tr><td class="nowrap">${a.when}</td><td class="nowrap">${a.who}</td><td>${a.what}</td><td class="muted">${a.why}</td></tr>`).join('')}
+      </tbody></table></div>`;
+    return head('Compliance', 'Privacy requests, consent records and admin activity') +
+      `<div class="tabs" role="tablist">${tabs.map(([id, n, c]) => `<button class="tab" role="tab" data-ctab="${id}" aria-selected="${id === st.compTab}">${n}<b>${c}</b></button>`).join('')}</div>` + body;
+  };
+
+  function render() { $('#main').innerHTML = R[st.view](); }
+
+  /* ---------- drawers ---------- */
+  const drawer = $('#drawer'), scrim = $('#scrim');
+  function openDrawer(title, sub, body) {
+    drawer.innerHTML = `<div class="dhead"><div><h3>${title}</h3><p>${sub}</p></div><button class="x" data-act="close" aria-label="Close">✕</button></div><div class="dbody">${body}</div>`;
+    drawer.hidden = false; scrim.hidden = false; drawer.querySelector('.x').focus();
+  }
+  function closeDrawer() { drawer.hidden = true; scrim.hidden = true; drawer.innerHTML = ''; }
+  scrim.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.hidden) closeDrawer(); });
+
+  const D = {};
+  D.brokerage = id => {
+    const b = BROKERAGES.find(x => x.id === id), ag = agentsFor(b);
+    openDrawer(b.name, `${b.plan} · ${b.agents} agent${b.agents > 1 ? 's' : ''}`, `
+      <div class="dsec"><h4>Account</h4><dl class="kv"><dt>Status</dt><dd>${b.status}${b.note ? ` · ${b.note}` : ''}</dd><dt>Licensed in</dt><dd>${b.states.join(', ')}</dd><dt>MLS memberships</dt><dd>${b.mls.join(', ')}</dd><dt>Leads (30 days)</dt><dd>${b.leads} · ${usd(b.spend)}</dd><dt>Markets bought</dt><dd>${b.leads ? 'Denver central, Lakewood / Golden' : '—'}</dd></dl></div>
+      <div class="dsec"><h4>Agents${b.agents > ag.length ? ` (showing ${ag.length} of ${b.agents})` : ''}</h4>
+        <div class="tablewrap"><table><thead><tr><th>Agent</th><th>Market</th><th class="num">Clients</th><th class="num">Leads</th></tr></thead><tbody>${ag.map(a => `<tr><td><b>${a.name}</b><small>${a.role}</small></td><td>${a.markets}</td><td class="num">${a.clients}</td><td class="num">${a.leads}</td></tr>`).join('')}</tbody></table></div></div>
+      ${b.status === 'Internal' ? '<div class="callout info">This is Nestmatch’s own brokerage. It holds the MLS memberships and receives referral fees, so it can’t buy leads.</div>'
+        : `<div class="row"><button class="btn ${b.status === 'Paused' ? '' : 'danger'}" data-act="toggleBrokerage" data-id="${b.id}">${b.status === 'Paused' ? 'Resume lead buying' : 'Pause lead buying'}</button><button class="btn ghost" data-act="viewAs" data-id="${b.id}">View as this brokerage</button></div>`}`);
+  };
+  D.client = id => {
+    const c = CLIENTS.find(x => x.id === id), shown = st.revealed[id];
+    const mask = s => s.replace(/^(.).*(@.*)$/, '$1••••••$2');
+    openDrawer(c.name, `${c.market} · last active ${c.last}`, `
+      <div class="dsec"><h4>Contact</h4>
+        ${shown ? `<dl class="kv"><dt>Email</dt><dd>${c.email}</dd><dt>Phone</dt><dd>${c.phone}</dd></dl><p class="muted" style="font-size:12px;margin:6px 0 0">Access logged: ${shown}</p>`
+        : `<dl class="kv"><dt>Email</dt><dd>${mask(c.email)}</dd><dt>Phone</dt><dd>(•••) •••-${c.phone.slice(-4)}</dd></dl>
+          <div class="formrow" style="margin-top:10px"><label for="why">Reason for viewing contact details</label>
+            <div class="row"><select class="select" id="why" style="flex:1"><option value="">Choose a reason…</option><option>Support ticket</option><option>Lead dispute</option><option>Privacy request</option><option>Fraud review</option></select><button class="btn" data-act="reveal" data-id="${c.id}" disabled id="revealBtn">Reveal</button></div></div>`}
+      </div>
+      <div class="dsec"><h4>Relationships</h4><dl class="kv"><dt>Agent</dt><dd>${c.agent || 'None (eligible to be sold as a buyer lead)'}</dd><dt>Household</dt><dd>${c.household}</dd><dt>Members</dt><dd>${c.members}</dd><dt>Swipes</dt><dd>${c.saves} saved · ${c.removes} removed</dd></dl></div>
+      <div class="dsec"><h4>House profile</h4><p style="margin:0 0 8px;font-size:13px">${c.criteria}</p><div class="narr">${c.narrative}</div></div>
+      <div class="dsec"><h4>Consent</h4>${c.consentOk ? `<span class="pill ok">${c.consent}</span>` : `<div class="callout">No contact consent. This buyer can’t be sold as a lead or contacted by vendors.</div>`}</div>`);
+  };
+  D.lead = id => {
+    const l = LEADS.find(x => x.id === id);
+    let actions = '';
+    if (l.status === 'Disputed') actions = `<div class="callout"><b>Dispute:</b> ${l.dispute}</div><div class="row"><button class="btn" data-act="refund" data-id="${l.id}">Refund ${usd(l.price)}</button><button class="btn ghost" data-act="rejectDispute" data-id="${l.id}">Reject dispute</button></div>`;
+    else if (l.status === 'Under contract') actions = `<div class="formrow"><label for="closePrice">Closing price</label><input class="field" id="closePrice" type="number" step="1000" placeholder="e.g. 489000"></div><div class="calc" id="feeCalc">Fee = closing price × 2.5% commission × ${marketRef(l.market)}% referral</div><div class="row"><button class="btn" data-act="closeLead" data-id="${l.id}" id="closeBtn" disabled>Mark closed and invoice</button></div>`;
+    else if (l.status === 'Delivered' || l.status === 'Accepted') actions = `<div class="row"><button class="btn danger" data-act="refund" data-id="${l.id}">Refund ${usd(l.price)}</button><button class="btn ghost" data-act="resend" data-id="${l.id}">Resend to recipient</button></div>`;
+    else if (l.status === 'Closed') actions = `<div class="callout info">Closed at ${usd(l.closing)}. Referral fee ${leadPrice(l)} invoiced to ${l.to.split(' · ')[0]}.</div>`;
+    openDrawer(l.id, `${l.type} · ${l.created}`, `
+      <div class="dsec"><h4>Summary</h4><dl class="kv"><dt>Buyer</dt><dd>${l.client}</dd><dt>Market</dt><dd>${l.market}</dd><dt>About</dt><dd>${l.property}</dd><dt>Sold to</dt><dd>${l.to}</dd><dt>Price</dt><dd>${leadPrice(l)}${l.model === 'referral' ? ' (paid at closing)' : ''}</dd><dt>Status</dt><dd><span class="pill ${leadPill(l.status)}">${l.status}</span></dd></dl></div>
+      <div class="dsec"><h4>How it was routed</h4><ol class="trace">${l.trace.map(([t, d], i) => `<li><span class="dot ${i === l.trace.length - 1 ? 'end' : ''}">${i + 1}</span><span><b>${t}</b><small>${d}</small></span></li>`).join('')}</ol></div>
+      <div class="dsec"><h4>Actions</h4><div class="stack" style="gap:10px">${actions}</div></div>`);
+  };
+  D.vendor = id => {
+    const v = VENDORS.find(x => x.id === id);
+    const review = v.status === 'RESPA review';
+    openDrawer(v.name, `${v.cat} · ${v.area}`, `
+      <div class="dsec"><h4>Account</h4><dl class="kv"><dt>Status</dt><dd><span class="pill ${v.cls}">${v.status}</span></dd><dt>Leads (30 days)</dt><dd>${v.leads} · ${usd(v.spend)}</dd><dt>Placements</dt><dd>${ADS.filter(a => a.who === v.name).map(a => a.slot).join(', ') || '—'}</dd></dl></div>
+      ${v.respa ? `<div class="dsec"><h4>RESPA review</h4>
+        ${review ? `<p style="margin:0 0 10px;font-size:13px">${v.cat}s provide settlement services, so the ad must be a flat fee at fair market value, with no link to referrals. Check each item before approving.</p>
+          <div class="checks" id="respaChecks">
+            <label><input type="checkbox"> <span>Flat fee per placement, not per lead, click or closing</span></label>
+            <label><input type="checkbox"> <span>Fee matches the documented rate card (fair market value)</span></label>
+            <label><input type="checkbox"> <span>Ad is labeled “Sponsored”</span></label>
+            <label><input type="checkbox"> <span>Lender rankings and recommendations ignore who pays</span></label>
+          </div>
+          <div class="row" style="margin-top:12px"><button class="btn" data-act="approveVendor" data-id="${v.id}" id="approveBtn" disabled>Approve ad</button><button class="btn ghost" data-act="close">Send to counsel</button></div>`
+        : '<div class="callout info">Approved for flat-fee ads. Per-lead deals stay off for settlement-service providers.</div>'}</div>` : ''}`);
+  };
+
+  /* ---------- events ---------- */
+  const app = $('#app');
+  app.addEventListener('click', e => {
+    const nav = e.target.closest('[data-view]'); if (nav) { go(nav.dataset.view); return; }
+    const row = e.target.closest('[data-open]'); if (row) { D[row.dataset.open](row.dataset.id); return; }
+    const lt = e.target.closest('[data-ltab]'); if (lt) { st.leadTab = lt.dataset.ltab; render(); return; }
+    const ct = e.target.closest('[data-ctab]'); if (ct) { st.compTab = ct.dataset.ctab; render(); return; }
+    const a = e.target.closest('[data-act]'); if (!a || a.disabled) return;
+    const id = a.dataset.id, act = a.dataset.act;
+    if (act === 'close') return closeDrawer();
+    if (act === 'invite') return toast('Invite sent. The brokerage sets up its license and MLS details on sign-up.');
+    if (act === 'toggleBrokerage') {
+      const b = BROKERAGES.find(x => x.id === id); b.status = b.status === 'Paused' ? 'Active' : 'Paused'; b.note = b.status === 'Paused' ? 'Paused by ops admin' : '';
+      audit(`${b.status === 'Paused' ? 'Paused' : 'Resumed'} lead buying for ${b.name}`, 'Admin action'); closeDrawer(); render(); return toast(`${b.name}: lead buying ${b.status === 'Paused' ? 'paused' : 'resumed'}.`);
+    }
+    if (act === 'viewAs') { const b = BROKERAGES.find(x => x.id === id); audit(`Viewed the app as ${b.name}`, 'Support'); return toast(`This would open the agent portal as ${b.name}, read-only. Logged.`); }
+    if (act === 'reveal') {
+      const c = CLIENTS.find(x => x.id === id), why = $('#why').value;
+      st.revealed[id] = `${why} · ${nowStamp()}`; audit(`Viewed contact info for ${c.name}`, why); renderSide(); D.client(id); return toast('Contact details shown. Added to the audit log.');
+    }
+    if (act === 'refund') { const l = LEADS.find(x => x.id === id); l.status = 'Refunded'; l.trace.push(['Refunded', `By ops admin on Nov 22`]); audit(`Refunded ${l.id} (${usd(l.price)}) to ${l.to.split(' · ')[0].split(' ↔ ')[0]}`,l.dispute ? 'Dispute upheld' : 'Admin action'); renderSide(); render(); D.lead(id); return toast(`${l.id} refunded.`); }
+    if (act === 'rejectDispute') { const l = LEADS.find(x => x.id === id); l.status = 'Accepted'; audit(`Rejected dispute on ${l.id}`, 'Connection was valid'); renderSide(); render(); D.lead(id); return toast('Dispute rejected. The brokerage is notified.'); }
+    if (act === 'resend') return toast('Lead resent to the recipient.');
+    if (act === 'closeLead') {
+      const l = LEADS.find(x => x.id === id); l.closing = +$('#closePrice').value; l.status = 'Closed'; l.trace.push(['Closed', `Closing price ${usd(l.closing)} recorded Nov 22`]);
+      audit(`Recorded closing for ${l.id} at ${usd(l.closing)}`, 'Closing statement'); render(); D.lead(id); return toast(`Invoice for ${leadPrice(l)} created.`);
+    }
+    if (act === 'savePricing') { audit('Updated market pricing', 'Pricing review'); return toast('Pricing saved. Applies to leads created from now on.'); }
+    if (act === 'refresh') {
+      const f = FEEDS.find(x => x.id === id); f.refreshed = 'just now'; f.status = 'Healthy'; f.cls = 'ok'; f.checks.forEach(c => { if (c[1].startsWith('Refreshed')) c[0] = 'y'; });
+      audit(`Forced refresh of ${f.name} feed`, 'Refresh limit exceeded'); renderSide(); render(); return toast(`${f.name} refreshed. ${f.listings.toLocaleString()} listings updated.`);
+    }
+    if (act === 'pauseFeed') { const f = FEEDS.find(x => x.id === id); audit(`Paused display of ${f.name} listings`, 'Admin action'); f.status = 'Paused'; f.cls = 'bad'; renderSide(); render(); return toast(`${f.name} listings hidden from buyers and agent sites.`); }
+    if (act === 'nudge') return toast('Email drafted to the MLS data-licensing contact.');
+    if (act === 'approveVendor') {
+      const v = VENDORS.find(x => x.id === id); v.status = 'Ads only'; v.cls = 'info'; const ad = ADS.find(x => x.who === v.name); if (ad) ad.period = 'Dec 1 – Dec 31';
+      audit(`Approved ${v.name} ad after RESPA review`, 'Checklist complete'); renderSide(); render(); D.vendor(id); return toast(`${v.name} approved. Its ad starts Dec 1.`);
+    }
+    if (act === 'completePR') { const p = PRIVACY.find(x => x.id === id); p.status = 'Complete'; audit(`Completed ${p.id}: ${p.type.toLowerCase()} for ${p.client}`, 'Privacy request'); renderSide(); render(); return toast(`${p.id} marked complete. The person is emailed a confirmation.`); }
+  });
+  app.addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'clientQ') { st.clientQ = t.value; const pos = t.selectionStart; render(); const n = $('#clientQ'); n.focus(); n.setSelectionRange(pos, pos); }
+    if (t.dataset.price) PRICING[+t.dataset.price][t.dataset.k] = +t.value;
+    if (t.dataset.th) { st.th[+t.dataset.th] = +t.value; $('#distBox').innerHTML = distHTML(); }
+    if ('comps' in t.dataset) { st.minComps = Math.max(1, +t.value || 1); $('#distBox').innerHTML = distHTML(); }
+    if (t.id === 'closePrice') {
+      const l = LEADS.find(x => x.status === 'Under contract'), p = +t.value, r = marketRef(l.market);
+      $('#feeCalc').textContent = p ? `Fee = ${usd(p)} × 2.5% × ${r}% = ${usd(p * 0.025 * r / 100)}` : `Fee = closing price × 2.5% commission × ${r}% referral`;
+      $('#closeBtn').disabled = !(p > 10000);
+    }
+  });
+  app.addEventListener('change', e => {
+    if (e.target.id === 'why') $('#revealBtn').disabled = !e.target.value;
+    if (e.target.closest('#respaChecks')) $('#approveBtn').disabled = [...document.querySelectorAll('#respaChecks input')].some(i => !i.checked);
+    if (e.target.id === 'vIdx') st.idxPositiveOnly = e.target.checked;
+  });
+
+  go('overview');
+})();
+</script>
