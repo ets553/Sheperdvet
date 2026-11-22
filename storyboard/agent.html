@@ -1,0 +1,688 @@
+<title>Nestmatch Agent Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: storyboard notes on top, then a browser frame holding the agent portal (light sidebar, top bar with role switch, working area, right drawer). */
+:root {
+  --bg: #eef1ef; --panel: #ffffff; --ink: #14231d; --muted: #5c6b64; --line: #dde3df; --chip: #f1f4f2;
+  --accent: #1e5a45; --accent-ink: #ffffff; --accent-soft: #dcebe4; --sun: #f2b33d;
+  --good: #1f8a5b; --bad: #c2413a; --warn: #a8670f; --partner: #b5476b;
+  --side: #f6f8f7; --side-active: #e3ede8; --frame: #d5dcd8; --row-hover: #f6f8f7;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832; --chip: #1c2722;
+    --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
+    --good: #4cc38a; --bad: #ef6f66; --warn: #e8b04b; --partner: #e8799d;
+    --side: #121a17; --side-active: #1d2b25; --frame: #26322d; --row-hover: #1a2420;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832; --chip: #1c2722;
+  --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e;
+  --good: #4cc38a; --bad: #ef6f66; --warn: #e8b04b; --partner: #e8799d;
+  --side: #121a17; --side-active: #1d2b25; --frame: #26322d; --row-hover: #1a2420;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 18px; }
+
+.sbhead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: end; }
+@media (max-width: 860px) { .sbhead { grid-template-columns: minmax(0, 1fr); } }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; color: var(--muted); margin: 0 0 6px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: 32px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -0.01em; }
+.lede { color: var(--muted); margin: 0; max-width: 62ch; }
+.notes { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
+.notes .n { font-size: 12px; color: var(--muted); }
+.notes b.t { font-size: 15px; }
+.notes .try { font-size: 13px; }
+.notes .try span { font-weight: 600; color: var(--accent); }
+
+.browser { border-radius: 14px; overflow: hidden; border: 1px solid var(--frame); background: var(--panel); box-shadow: 0 24px 50px -30px rgba(10, 30, 20, .45); }
+.chrome { display: flex; align-items: center; gap: 12px; padding: 9px 14px; background: var(--frame); }
+.dots { display: flex; gap: 6px; flex: none; }
+.dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--panel); opacity: .8; }
+.url { flex: 1; min-width: 0; background: var(--panel); border-radius: 8px; padding: 4px 12px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.app { position: relative; display: grid; grid-template-columns: 220px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 800px; }
+@media (max-width: 860px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); height: 84dvh; min-height: 640px; } }
+.topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: 18px; margin-right: auto; }
+.brand svg { width: 22px; height: 22px; color: var(--accent); }
+.brand small { font-family: var(--font-body); font-weight: 600; font-size: 11px; color: var(--muted); }
+.role { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.role select { height: 34px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; background: var(--panel); font-size: 13px; color: var(--ink); }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 12px; flex: none; }
+
+.side { background: var(--side); border-right: 1px solid var(--line); padding: 14px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.nav { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink); }
+.nav:hover { background: var(--side-active); }
+.nav[aria-current="page"] { background: var(--side-active); font-weight: 600; color: var(--accent); }
+.nav svg { width: 16px; height: 16px; flex: none; }
+.nav .count { margin-left: auto; background: var(--bad); color: #fff; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+.sidefoot { margin-top: auto; padding: 12px 10px 0; font-size: 11px; color: var(--muted); }
+@media (max-width: 860px) {
+  .side { flex-direction: row; overflow-x: auto; padding: 6px 8px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .nav { width: auto; flex: none; white-space: nowrap; }
+  .sidefoot { display: none; }
+}
+.main { overflow-y: auto; padding: 22px 26px 40px; min-width: 0; }
+@media (max-width: 860px) { .main { padding: 16px 14px 32px; } }
+.vhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.vhead h2 { font-family: var(--font-display); font-weight: 800; font-size: 24px; margin: 0; letter-spacing: -0.01em; }
+.vhead p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.exdata { font-size: 11px; font-weight: 600; color: var(--muted); border: 1px dashed var(--line); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.card h3 { margin: 0 0 2px; font-size: 14px; font-weight: 600; }
+.card .sub { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.split { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .split { grid-template-columns: minmax(0, 1fr); } }
+.stack { display: grid; gap: 14px; align-content: start; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.kpi .l { font-size: 12px; color: var(--muted); }
+.kpi .v { font-family: var(--font-display); font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.kpi .d { font-size: 12px; color: var(--muted); }
+.kpi.alert { border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); }
+.kpi.alert .v { color: var(--bad); }
+
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.tab { background: none; border: 0; padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab b { font-weight: 600; color: var(--muted); margin-left: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover td { background: var(--row-hover); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td small, .muted { color: var(--muted); }
+td small { display: block; font-size: 12px; }
+.nowrap { white-space: nowrap; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; white-space: nowrap; background: var(--chip); color: var(--muted); }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.ok { color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.pill.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.pill.info { color: var(--accent); background: var(--accent-soft); }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; margin: 1px 2px 1px 0; color: var(--muted); }
+
+.btn { height: 36px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 13px; padding: 0 14px; cursor: pointer; white-space: nowrap; }
+.btn.ghost { background: var(--panel); color: var(--ink); border-color: var(--line); }
+.btn.danger { background: var(--panel); color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.sm { height: 30px; font-size: 12px; padding: 0 10px; }
+.field, .select { height: 36px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; background: var(--panel); font-size: 13px; width: 100%; }
+textarea.field { height: auto; min-height: 80px; padding: 8px 10px; line-height: 1.45; resize: vertical; }
+.formrow { display: grid; gap: 6px; font-size: 12px; font-weight: 600; }
+
+/* timer list */
+.waitlist { display: grid; gap: 8px; }
+.waititem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; background: var(--panel); text-align: left; width: 100%; }
+.waititem:hover { background: var(--row-hover); }
+.waititem small { display: block; color: var(--muted); font-size: 12px; }
+.clock { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 13px; }
+.clock.late { color: var(--bad); }
+.clock.soon { color: var(--warn); }
+.feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.feed li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; align-items: start; }
+.feed li:last-child { border-bottom: 0; }
+.feed i { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: var(--accent); }
+.feed time { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* drawer */
+.scrim { position: absolute; inset: 0; background: rgba(8, 16, 12, .35); z-index: 20; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(500px, 100%); background: var(--panel); z-index: 21; border-left: 1px solid var(--line); display: flex; flex-direction: column; box-shadow: -20px 0 40px -24px rgba(0,0,0,.4); }
+.dhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 18px 20px 12px; border-bottom: 1px solid var(--line); }
+.dhead h3 { font-family: var(--font-display); font-size: 20px; margin: 0; font-weight: 800; }
+.dhead p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.x { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; flex: none; }
+.dbody { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 20px 24px; display: grid; gap: 16px; align-content: start; }
+.dsec h4 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
+.kv { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 12px; font-size: 13px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.narr { background: var(--chip); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+.callout { border-radius: 10px; padding: 10px 12px; font-size: 13px; background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.callout.info { background: var(--accent-soft); }
+.contact { display: grid; gap: 8px; }
+.contact a, .contact .line { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+.copy { font-size: 12px; font-weight: 600; color: var(--accent); background: none; border: 0; cursor: pointer; }
+
+/* homes */
+.homes { display: grid; gap: 8px; }
+.home { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
+.home .thumb { width: 64px; height: 50px; border-radius: 8px; overflow: hidden; }
+.home .thumb svg { width: 100%; height: 100%; display: block; }
+.home strong { display: block; font-variant-numeric: tabular-nums; font-size: 13px; }
+.home small { color: var(--muted); font-size: 12px; }
+.vbadge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 8px; white-space: nowrap; }
+.meter { display: inline-flex; gap: 2px; }
+.meter i { width: 4px; height: 10px; border-radius: 2px; background: currentColor; opacity: .25; }
+.meter i.on { opacity: 1; }
+.vb-great { background: var(--good); color: #fff; }
+.vb-good { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+.vb-fair { background: var(--chip); color: var(--ink); }
+.vb-above { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.vb-high { background: color-mix(in srgb, var(--bad) 13%, transparent); color: var(--bad); }
+.vb-none { background: var(--chip); color: var(--muted); }
+
+.diff { display: grid; gap: 10px; }
+.diff-row { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 13px; }
+.diff-track { position: relative; height: 18px; }
+.diff-track::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: var(--line); }
+.diff-track i { position: absolute; top: 3px; width: 13px; height: 13px; border-radius: 50%; transform: translateX(-50%); border: 2px solid var(--panel); }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; }
+.hist li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; }
+.hist time { color: var(--muted); font-size: 12px; }
+
+/* pricing tool */
+.ptool { display: grid; gap: 12px; }
+.ptool input[type=range] { width: 100%; accent-color: var(--accent); }
+.pbig { font-family: var(--font-display); font-weight: 800; font-size: 28px; font-variant-numeric: tabular-nums; }
+.minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.stat { background: var(--chip); border-radius: 8px; padding: 8px 10px; }
+.stat .l { font-size: 11px; color: var(--muted); }
+.stat .v { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.toggle:last-child { border-bottom: 0; }
+.toggle small { display: block; color: var(--muted); font-size: 12px; }
+.toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.toggle label { cursor: pointer; }
+
+/* website builder */
+.swatches { display: flex; gap: 8px; }
+.swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--line); cursor: pointer; }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
+.site { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fbfaf7; color: #1d2421; font-size: 12px; }
+.site .sh { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #e6e3dc; }
+.site .sh b { font-family: var(--font-display); font-size: 14px; }
+.site .sh nav { display: flex; gap: 10px; color: #59615d; }
+.site .hero { padding: 18px 14px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; align-items: center; }
+.site .hero h4 { font-family: var(--font-display); font-size: 22px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -0.01em; }
+.site .hero p { margin: 0 0 10px; color: #59615d; }
+.site .cta { display: inline-block; color: #fff; border-radius: 8px; padding: 6px 12px; font-weight: 600; }
+.site .widget { border-radius: 12px; overflow: hidden; border: 1px solid #e6e3dc; background: #fff; }
+.site .widget svg { display: block; width: 100%; height: 90px; }
+.site .widget div { padding: 6px 8px; display: flex; justify-content: space-between; font-weight: 700; }
+.site .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0 14px 14px; }
+.site .lc { border: 1px solid #e6e3dc; border-radius: 8px; overflow: hidden; background: #fff; }
+.site .lc svg { display: block; width: 100%; height: 56px; }
+.site .lc div { padding: 4px 6px; }
+.site .lc small { display: block; color: #6b726e; font-size: 10px; }
+.site .sf { padding: 8px 14px; border-top: 1px solid #e6e3dc; font-size: 10px; color: #6b726e; }
+@media (max-width: 520px) { .site .hero { grid-template-columns: minmax(0, 1fr); } .site .row3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+pre.code { margin: 0; background: var(--chip); border-radius: 10px; padding: 10px 12px; font-family: var(--font-mono); font-size: 12px; overflow-x: auto; white-space: pre; }
+
+.toast { position: absolute; left: 50%; bottom: 22px; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; z-index: 40; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; transition: opacity .2s, transform .2s; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.001ms !important; } }
+</style>
+
+<div class="wrap">
+  <header class="sbhead">
+    <div>
+      <p class="eyebrow">Realtor portal storyboard · clickable prototype</p>
+      <h1>Nestmatch Agent Portal</h1>
+      <p class="lede">Where agents work their leads and clients, price their listings, buy leads, run their website and get reports. Switch the role in the top bar to see what a broker admin gets. All people, homes and figures are example data.</p>
+    </div>
+    <div class="notes" aria-live="polite">
+      <span class="n" id="noteNum"></span>
+      <b class="t" id="noteTitle"></b>
+      <span id="notePurpose"></span>
+      <span class="try" id="noteTry"></span>
+    </div>
+  </header>
+
+  <div class="browser">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url" id="url">agents.nestmatch.app/today</span></div>
+    <div class="app" id="app">
+      <div class="topbar">
+        <span class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg>Nestmatch <small>for agents</small></span>
+        <label class="role" for="roleSel">Signed in as
+          <select id="roleSel"><option value="agent">Ana Ruiz · Agent</option><option value="broker">Front Range Homes · Broker admin</option></select>
+        </label>
+        <span class="avatar" id="avatar">AR</span>
+      </div>
+      <nav class="side" id="side" aria-label="Portal sections"></nav>
+      <main class="main" id="main"></main>
+      <div class="scrim" id="scrim" hidden></div>
+      <aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true"></aside>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const usd = n => '$' + Math.round(n).toLocaleString();
+  const k = n => '$' + Math.round(n / 1000) + 'K';
+
+  /* ---------- small house picture ---------- */
+  function art(kind, sky, wall, trim, uid) {
+    const w = 340, h = 260, g = h * 0.78; let b = '';
+    if (kind === 'free') b = `<path d="M70 ${g} V120 L170 52 L270 120 V${g} Z" fill="${wall}"/><path d="M58 124 L170 44 L282 124" fill="none" stroke="${trim}" stroke-width="10" stroke-linejoin="round"/><rect x="96" y="134" width="44" height="38" fill="#cfe6f2" stroke="${trim}" stroke-width="5"/><rect x="200" y="134" width="44" height="38" fill="#cfe6f2" stroke="${trim}" stroke-width="5"/><rect x="150" y="150" width="40" height="${g - 150}" fill="${trim}"/><circle cx="30" cy="${g - 38}" r="28" fill="#4f8f5c"/>`;
+    else if (kind === 'condo') b = `<rect x="104" y="30" width="132" height="${g - 30}" fill="${wall}"/><rect x="98" y="24" width="144" height="10" fill="${trim}"/>${[48, 84, 120, 156].map(y => [120, 156, 192].map(x => `<rect x="${x}" y="${y}" width="26" height="24" fill="#cfe6f2" stroke="${trim}" stroke-width="3"/>`).join('')).join('')}<rect x="150" y="${g - 30}" width="40" height="30" fill="${trim}"/>`;
+    else b = [0, 1, 2].map(i => { const x = 30 + i * 96; return `<path d="M${x} ${g} V110 L${x + 48} 70 L${x + 96} 110 V${g} Z" fill="${i === 1 ? trim : wall}"/><rect x="${x + 16}" y="122" width="26" height="28" fill="#cfe6f2"/><rect x="${x + 54}" y="122" width="26" height="28" fill="#cfe6f2"/><rect x="${x + 36}" y="${g - 44}" width="24" height="44" fill="${i === 1 ? wall : trim}"/>`; }).join('');
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs><linearGradient id="g${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs><rect width="${w}" height="${h}" fill="url(#g${uid})"/><circle cx="${w - 52}" cy="44" r="20" fill="#ffd27a"/>${b}<rect y="${g}" width="${w}" height="${h - g}" fill="#7fae7a"/></svg>`;
+  }
+  const RATINGS = [['great', 'Great value'], ['good', 'Good value'], ['fair', 'Fair price'], ['above', 'Above market'], ['high', 'Room to negotiate']];
+  function rating(price, est, comps) {
+    if (!est || comps < 3) return { i: -1, html: '<span class="vbadge vb-none">No value rating</span>', label: 'No value rating' };
+    const p = (price - est) / est, i = p <= -0.05 ? 0 : p <= -0.02 ? 1 : p < 0.02 ? 2 : p < 0.05 ? 3 : 4;
+    return { i, pct: p, label: RATINGS[i][1], html: `<span class="vbadge vb-${RATINGS[i][0]}"><span class="meter" aria-hidden="true">${[0, 1, 2, 3, 4].map(n => `<i${n === i ? ' class="on"' : ''}></i>`).join('')}</span>${RATINGS[i][1]}</span>` };
+  }
+
+  /* ---------- example data ---------- */
+  const HOMES = {
+    h1: { addr: '5120 Holly Ridge Dr', area: 'Centennial', price: 712000, est: 756000, comps: 6, beds: 4, baths: 3, kind: 'free', sky: ['#a9d4f5', '#e9f4fb'], wall: '#f3ede2', trim: '#2f4a5e' },
+    h2: { addr: '17 Juniper Court', area: 'Bellmont Heights', price: 552000, est: 529000, comps: 4, beds: 3, baths: 3, kind: 'attached', sky: ['#c4d9f0', '#eef3fa'], wall: '#e9d7c4', trim: '#7a3b2e' },
+    h3: { addr: '740 Birch Hollow Ln', area: 'Greenwood Village', price: 689000, est: 712000, comps: 5, beds: 4, baths: 2.5, kind: 'free', sky: ['#b9dcf3', '#eef6fb'], wall: '#dfe8d8', trim: '#3d5a40' },
+    h4: { addr: '902 Aster Way', area: 'Sloan’s Park', price: 468000, est: 486000, comps: 7, beds: 2, baths: 2, kind: 'free', sky: ['#f3d2b8', '#fbeee2'], wall: '#d9d3e6', trim: '#4a3f6b' },
+    h5: { addr: '31 Fenwick Row', area: 'Bellmont Heights', price: 529000, est: null, comps: 2, beds: 3, baths: 2.5, kind: 'attached', sky: ['#f3d2b8', '#fbeee2'], wall: '#d9d3e6', trim: '#4a3f6b' },
+    h6: { addr: '6100 Ridge Rd', area: 'Golden', price: 735000, est: 760000, comps: 7, beds: 3, baths: 2, kind: 'free', sky: ['#c9d6ef', '#eef2fa'], wall: '#e4ddd2', trim: '#5a4632' },
+    h7: { addr: '412 Elm Pl, Unit 3', area: 'Lakewood', price: 349000, est: 352000, comps: 8, beds: 2, baths: 2, kind: 'condo', sky: ['#f6c9a6', '#fbe9da'], wall: '#d7dde6', trim: '#3a4656' },
+  };
+  const pic = id => { const h = HOMES[id]; return art(h.kind, h.sky, h.wall, h.trim, id); };
+  const homeRow = (id, extra = '') => { const h = HOMES[id]; return `<div class="home"><div class="thumb">${pic(id)}</div><div><strong>$${h.price.toLocaleString()}</strong><small>${h.addr} · ${h.beds} bd · ${h.baths} ba</small>${extra}</div>${rating(h.price, h.est, h.comps).html}</div>`; };
+
+  const T0 = Date.now();
+  const LEADS = [
+    { id: 'L-20481', type: 'Buyer lead', name: 'Priya Shah', stage: 'New', waitBase: 6, when: 'Today, 9:14 AM', market: 'Lakewood / Golden', phone: '(555) 018-7741', email: 'priya.s@example.com',
+      consent: 'Priya agreed on Nov 2 to be contacted by phone, text and email by an agent in Lakewood / Golden about homes (consent text v3).', excl: 'Dec 22',
+      criteria: 'Condo or attached · Lakewood · 2+ bd · $280K–$420K · needs a lender', narrative: 'First home. Want a low-maintenance condo or townhome near light rail, with in-unit laundry.', saved: ['h7'], household: 'Searching alone' },
+    { id: 'L-20488', type: 'Buyer lead', name: 'Daniel Ortiz', stage: 'New', waitBase: 13, when: 'Today, 9:07 AM', market: 'Lakewood / Golden', phone: '(555) 012-6620', email: 'dortiz@example.com',
+      consent: 'Daniel agreed on Nov 22 to be contacted by phone, text and email by an agent in Lakewood / Golden about homes (consent text v3).', excl: 'Dec 22',
+      criteria: 'Free standing · Golden · 3+ bd · $650K–$800K · pre-approved', narrative: 'Relocating from Austin with a partner. Want mountain views and a garage for bikes. Moving in 0–3 months.', saved: ['h6'], household: 'Household of 2 (partner has not joined yet)' },
+    { id: 'L-20490', type: 'Agent connection', name: 'Represented buyer', stage: 'New', waitBase: 41, when: 'Today, 8:39 AM', market: 'Cherry Creek SD', listing: 'h2',
+      buyerAgent: 'Dana Okafor', buyerAgentCo: 'Dana Okafor Real Estate', agentPhone: '(555) 010-3344', agentEmail: 'dana@danaokafor.example' },
+    { id: 'L-20377', type: 'Buyer lead', name: 'Kira Novak', stage: 'Nurturing', when: 'Nov 12', market: 'Lakewood / Golden', phone: '(555) 015-2209', email: 'kira.n@example.com',
+      consent: 'Kira agreed on Nov 12 (consent text v3).', excl: 'Dec 12', criteria: 'Attached · Lakewood · 2+ bd · $400K–$480K', narrative: 'Planning to move next spring. Wants to watch prices for now.', saved: ['h4'], household: 'Searching alone' },
+    { id: 'L-20402', type: 'Buyer lead', name: 'Marcus Lee', stage: 'Became a client', when: 'Oct 29', market: 'Cherry Creek SD', phone: '(555) 011-0932', email: 'mlee@example.com',
+      consent: 'Marcus agreed on Oct 29 (consent text v2).', excl: '—', criteria: 'Free standing · Cherry Creek School District · 3+ bd with office · $650K–$900K · cash', narrative: 'Family moving from Seattle. Schools first, then a yard and a short drive to the Tech Center.', saved: ['h1', 'h2', 'h3'], household: 'Lee household (3)' },
+    { id: 'L-20311', type: 'Buyer lead', name: 'Ben Adler', stage: 'Refund requested', when: 'Nov 6', market: 'Lakewood / Golden', phone: '(555) 019-0000', email: 'ben.a@example.com',
+      consent: 'Ben agreed on Nov 6 (consent text v3).', excl: '—', criteria: 'Any type · Lakewood', narrative: '—', saved: [], household: '—', refundReason: 'Phone number not in service' },
+  ];
+  const STAGES = ['New', 'Contacted', 'Touring', 'Under contract', 'Closed', 'Nurturing', 'Became a client', 'Refund requested'];
+  const stagePill = s => ({ New: 'bad', Contacted: 'info', Touring: 'info', 'Under contract': 'ok', Closed: 'ok', Nurturing: '', 'Became a client': 'ok', 'Refund requested': 'warn' }[s] ?? '');
+
+  const CLIENTS = [
+    { id: 'c1', name: 'Lee household', members: [['Marcus Lee', 'Primary'], ['Jae Lee', 'Partner'], ['Min Lee', 'Viewer, 16']], stage: 'Touring', last: '20 min ago',
+      criteria: 'Free standing · Cherry Creek School District · 3+ bd with office · $650K–$900K · cash',
+      narrative: 'Family of four moving from Seattle. Schools first, then a yard for the dog and a short drive to the Tech Center. Happy with 3 bedrooms if one works as an office.',
+      common: ['h1', 'h2'], waiting: [['h3', 'Jae']], denied: [['h4', 'Jae']],
+      differ: [['Schools', 9.5, 8], ['Yard', 6, 9], ['Commute', 8, 4], ['Kitchen', 5, 8], ['Price', 7, 6]], a: 'Marcus', b: 'Jae',
+      history: [['Nov 18', 'Bedrooms 4+ changed to 3+ with home office (accepted a rethink check-in)'], ['Nov 10', 'Jae added “Fenced yard” as a must-have'], ['Oct 30', 'Profile created from the interview']] },
+    { id: 'c2', name: 'Hollis household', members: [['Wes Hollis', 'Primary'], ['Dee Hollis', 'Partner']], stage: 'Under contract', last: 'Yesterday',
+      criteria: 'Attached · Lakewood · 3+ bd · $450K–$560K · pre-approved', narrative: 'Downsizing after the kids left. Want a townhome with a main-floor primary suite.',
+      common: ['h5'], waiting: [], denied: [['h7', 'Dee']], differ: [['Schools', 2, 3], ['Yard', 3, 5], ['Commute', 6, 6], ['Kitchen', 7, 9], ['Price', 8, 6]], a: 'Wes', b: 'Dee',
+      history: [['Nov 15', 'Went under contract on 31 Fenwick Row'], ['Nov 2', 'Added “Single-level living”']] },
+    { id: 'c3', name: 'Rachel Kim', members: [['Rachel Kim', 'Primary']], stage: 'Contacted', last: '3 days ago',
+      criteria: 'Condo · Lakewood · 1+ bd · $250K–$360K', narrative: 'Nurse at St. Anthony. Wants a short commute and a secure building.',
+      common: ['h7'], waiting: [], denied: [], differ: null, history: [['Nov 19', 'Budget raised to $360K']] },
+  ];
+
+  const LISTINGS = [
+    { id: 'h2', dom: 12, saves: 121, removes: 73, status: 'Active', showEst: true },
+    { id: 'h5', dom: 34, saves: 88, removes: 40, status: 'Under contract', showEst: true, note: 'Price cut Nov 20 from $549,000' },
+    { id: 'h6', dom: 5, saves: 64, removes: 18, status: 'Active', showEst: true },
+  ];
+  const COMPS = {
+    h2: [['22 Juniper Court', 'Oct 14', 518000, 1720], ['9 Laurel Mews', 'Sep 28', 541000, 1810], ['140 Garnet Ln', 'Sep 3', 524000, 1760], ['63 Larch Row', 'Aug 21', 533000, 1795]],
+    h5: [['27 Fenwick Row', 'Jun 2', 512000, 1650], ['118 Bell Ct', 'Apr 19', 498000, 1610]],
+    h6: [['6044 Ridge Rd', 'Oct 30', 771000, 1980], ['15 Lookout Dr', 'Oct 2', 748000, 1905], ['902 Canyon View', 'Sep 18', 765000, 2010]],
+  };
+  const MARKETS = [
+    { name: 'Lakewood / Golden', price: 70, on: true }, { name: 'Cherry Creek SD', price: 80, on: true },
+    { name: 'Denver central', price: 80, on: false }, { name: 'Aurora', price: 60, on: false },
+  ];
+  const TEAM = [
+    ['Ana Ruiz', 41, '9 min', '88%', 33, 'Active'], ['Hannah Cole', 38, '6 min', '93%', 29, 'Active'], ['Ravi Menon', 35, '14 min', '81%', 24, 'Active'],
+    ['Owen Brooks', 27, '26 min', '76%', 19, 'Active'], ['Lucia Ferraro', 0, '—', '—', 4, 'Invited'],
+  ];
+
+  /* ---------- state ---------- */
+  const st = { view: 'today', role: 'agent', leadTab: 'Open', siteColor: '#1e5a45', siteHead: 'Find your Lakewood home in a weekend of swiping', widget: true, budget: 500,
+    listing: 'h2', testPrice: null, client: 'c1', rptFreq: 'Weekly', rptDay: 'Fri', rptTime: '16:00', routing: 'Fastest responder first' };
+
+  const VIEWS = [
+    { id: 'today', name: 'Today', icon: '<path d="M4 5h16v15H4zM4 9h16M9 3v4M15 3v4"/>', purpose: 'The start of the day: leads waiting for a first reply with a response timer, what clients did overnight, and budget used.', tryit: 'The response timers run live. Click a waiting lead to open it.' },
+    { id: 'leads', name: 'Leads', icon: '<path d="M3 4h18l-7 8v7l-4 2v-9z"/>', purpose: 'Every lead bought: buyer leads with full contact and consent, and agent connections on your listings, where you only get the buyer’s agent.', tryit: 'Open Priya Shah and mark her contacted. Then open the agent connection to see why the buyer’s details are withheld.' },
+    { id: 'clients', name: 'Clients', icon: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 010 7M18 14c2.2.7 3.5 2.8 3.5 6"/>', purpose: 'Clients and their households: what everyone saved, what one person ruled out, where members disagree, and how their goals changed.', tryit: 'Open the Lee household and send them a home. It goes to the front of their decks.' },
+    { id: 'listings', name: 'My listings', icon: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>', purpose: 'Buyer interest in each listing and a pricing tool built on the same value estimate buyers see.', tryit: 'Drag the price slider on 17 Juniper Court and watch the badge and the number of buyers in budget change.' },
+    { id: 'buy', name: 'Buy leads', icon: '<path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/>', purpose: 'Choose markets, lead types and a weekly budget, and see this month’s charges.', tryit: 'Turn on Denver central and move the budget. The expected lead count updates.' },
+    { id: 'website', name: 'My website', icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>', purpose: 'The agent’s own IDX website with the swipe widget. MLS attribution and disclaimers are added for them.', tryit: 'Change the headline and colour. The preview and the embed code update together.' },
+    { id: 'reports', name: 'Reports', icon: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 17v-3M12 17v-6M15 17v-4"/>', purpose: 'The agent’s own performance summary and its email schedule. Broker admins also get the brokerage report.', tryit: 'Change the schedule to Mondays at 7:00 AM and save. Then switch the role to Broker admin.' },
+    { id: 'team', name: 'Team', icon: '<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2 20c0-3 2.7-5 6-5s6 2 6 5M12 20c0-3 2.7-5 6-5s4 1 4 2"/>', brokerOnly: true, purpose: 'Broker admins only: agents, their response times, seats, and how new leads are shared inside the brokerage.', tryit: 'Change the lead routing rule, or invite an agent.' },
+  ];
+  const visible = () => VIEWS.filter(v => !v.brokerOnly || st.role === 'broker');
+
+  const toastEl = $('#toast');
+  function toast(m) { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(toastEl._t); toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 2400); }
+
+  function renderSide() {
+    const newCount = LEADS.filter(l => l.stage === 'New').length;
+    $('#side').innerHTML = visible().map(v => `<button class="nav" data-view="${v.id}"${v.id === st.view ? ' aria-current="page"' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${v.icon}</svg>${v.name}${v.id === 'leads' && newCount ? `<span class="count">${newCount}</span>` : ''}</button>`).join('') +
+      `<div class="sidefoot">${st.role === 'broker' ? 'Front Range Homes · 31 agents' : 'Front Range Homes · REcolorado'}<br>Example data · Nov 22, 2026</div>`;
+  }
+  function go(id) {
+    if (!visible().some(v => v.id === id)) id = 'today';
+    st.view = id; closeDrawer();
+    const list = visible(), i = list.findIndex(v => v.id === id), v = list[i];
+    $('#noteNum').textContent = `Screen ${i + 1} of ${list.length}${st.role === 'broker' ? ' · broker admin' : ' · agent'}`;
+    $('#noteTitle').textContent = v.name; $('#notePurpose').textContent = v.purpose; $('#noteTry').innerHTML = `<span>Try it:</span> ${v.tryit}`;
+    $('#url').textContent = 'agents.nestmatch.app/' + id;
+    renderSide(); render(); $('#main').scrollTop = 0;
+  }
+  const head = (t, s, extra = '') => `<div class="vhead"><div><h2>${t}</h2><p>${s}</p></div><div class="row">${extra}<span class="exdata">Example data</span></div></div>`;
+  const waitMin = l => l.waitBase + Math.floor((Date.now() - T0) / 60000);
+  const clockHTML = l => { const m = waitMin(l); return `<span class="clock ${m >= 30 ? 'late' : m >= 10 ? 'soon' : ''}" data-clock="${l.id}">Waiting ${m} min</span>`; };
+
+  /* ---------- views ---------- */
+  const R = {};
+  R.today = () => {
+    const waiting = LEADS.filter(l => l.stage === 'New'), broker = st.role === 'broker';
+    const spent = MARKETS.filter(m => m.on).length ? 1240 : 0;
+    return head(broker ? 'Good morning, Front Range Homes' : 'Good morning, Ana', 'Sunday, November 22') + `
+      <div class="kpis">
+        <div class="kpi ${waiting.length ? 'alert' : ''}"><div class="l">Leads waiting for a reply</div><div class="v">${broker ? waiting.length + 4 : waiting.length}</div><div class="d">Goal: first reply within 15 min</div></div>
+        <div class="kpi"><div class="l">Median first reply (7 days)</div><div class="v">${broker ? '12 min' : '9 min'}</div><div class="d">${broker ? 'Team of 31' : 'Brokerage median 12 min'}</div></div>
+        <div class="kpi"><div class="l">${broker ? 'Active clients (team)' : 'Active clients'}</div><div class="v">${broker ? 412 : 33}</div><div class="d">${broker ? '57 households' : '9 households'}</div></div>
+        <div class="kpi"><div class="l">Lead spend this month</div><div class="v">${broker ? '$21,870' : usd(spent)}</div><div class="d">${broker ? 'Team cap $30,000' : 'Budget $2,000'}</div></div>
+      </div>
+      <div class="split">
+        <div class="card"><h3>Reply to these first</h3><p class="sub">Buyers who hear back within 15 minutes are far more likely to tour</p>
+          <div class="waitlist">${waiting.map(l => `<button class="waititem" data-lead="${l.id}"><span><b>${l.name}</b><small>${l.type} · ${l.market} · ${l.when}</small></span>${clockHTML(l)}</button>`).join('') || '<p class="muted" style="margin:0">Nobody is waiting. Nice work.</p>'}</div>
+        </div>
+        <div class="card"><h3>Overnight activity</h3><p class="sub">From your clients and listings</p>
+          <ul class="feed">
+            <li><i></i><span><b>Marcus and Jae Lee</b> both saved 5120 Holly Ridge Dr. It’s now on their Common list.</span><time>6:12 AM</time></li>
+            <li><i style="background:var(--partner)"></i><span><b>Jae Lee</b> saved 740 Birch Hollow Ln. It’s waiting on Marcus.</span><time>5:48 AM</time></li>
+            <li><i style="background:var(--sun)"></i><span><b>17 Juniper Court</b> (your listing) was saved by 9 buyers yesterday.</span><time>Yesterday</time></li>
+            <li><i></i><span><b>Rachel Kim</b> raised her budget to $360K after a rethink check-in.</span><time>Yesterday</time></li>
+            <li><i style="background:var(--warn)"></i><span><b>Your weekly summary</b> is scheduled for Friday at 4:00 PM.</span><time>Fri</time></li>
+          </ul>
+        </div>
+      </div>`;
+  };
+
+  R.leads = () => {
+    const open = l => !['Became a client', 'Closed', 'Refund requested'].includes(l.stage);
+    const tabs = [['Open', LEADS.filter(open)], ['All', LEADS], ['Agent connections', LEADS.filter(l => l.type === 'Agent connection')]];
+    const rows = tabs.find(t => t[0] === st.leadTab)[1];
+    return head('Leads', 'Buyer leads are yours alone for 30 days. Agent connections introduce you to a buyer’s agent.') + `
+      <div class="tabs" role="tablist">${tabs.map(([n, r]) => `<button class="tab" role="tab" data-ltab="${n}" aria-selected="${n === st.leadTab}">${n}<b>${r.length}</b></button>`).join('')}</div>
+      <div class="tablewrap"><table><thead><tr><th>Buyer</th><th>Type</th><th>Market</th><th>Arrived</th><th>Stage</th><th></th></tr></thead><tbody>
+      ${rows.map(l => `<tr class="click" data-lead="${l.id}"><td><b>${l.name}</b><small>${l.id}</small></td><td>${l.type}</td><td>${l.market}</td><td class="nowrap">${l.when}</td><td><span class="pill ${stagePill(l.stage)}">${l.stage}</span></td><td class="nowrap">${l.stage === 'New' ? clockHTML(l) : ''}</td></tr>`).join('')}
+      </tbody></table></div>`;
+  };
+
+  R.clients = () => head('Clients', 'People you represent, grouped by household') + `
+    <div class="tablewrap"><table><thead><tr><th>Client</th><th>Members</th><th>Stage</th><th class="num">Common</th><th class="num">Waiting</th><th class="num">Denied</th><th>Last active</th></tr></thead><tbody>
+    ${CLIENTS.map(c => `<tr class="click" data-client="${c.id}"><td><b>${c.name}</b><small>${c.criteria}</small></td><td>${c.members.map(m => m[0].split(' ')[0]).join(', ')}</td><td><span class="pill ${c.stage === 'Under contract' ? 'ok' : 'info'}">${c.stage}</span></td><td class="num">${c.common.length}</td><td class="num">${c.waiting.length}</td><td class="num">${c.denied.length}</td><td class="nowrap muted">${c.last}</td></tr>`).join('')}
+    </tbody></table></div>`;
+
+  R.listings = () => {
+    const L = LISTINGS.find(x => x.id === st.listing), h = HOMES[L.id];
+    const price = st.testPrice ?? h.price, r = rating(price, h.est, h.comps);
+    const lo = Math.round((h.est || h.price) * 0.88 / 1000) * 1000, hi = Math.round((h.est || h.price) * 1.12 / 1000) * 1000;
+    const inBudget = Math.max(4, Math.round(150 - (price / (h.est || h.price) - 0.88) * 520));
+    return head('My listings', 'How buyers react to your listings, and what the value estimate says') + `
+      <div class="tablewrap"><table><thead><tr><th>Listing</th><th class="num">Price</th><th>Status</th><th class="num">Days listed</th><th class="num">Saves</th><th class="num">Removes</th><th class="num">Save rate</th><th>Badge buyers see</th></tr></thead><tbody>
+      ${LISTINGS.map(x => { const hh = HOMES[x.id]; return `<tr class="click" data-listing="${x.id}"${x.id === st.listing ? ' style="background:var(--row-hover)"' : ''}><td><b>${hh.addr}</b><small>${x.note || hh.area}</small></td><td class="num">${usd(hh.price)}</td><td><span class="pill ${x.status === 'Active' ? 'ok' : 'info'}">${x.status}</span></td><td class="num">${x.dom}</td><td class="num">${x.saves}</td><td class="num">${x.removes}</td><td class="num">${Math.round(x.saves / (x.saves + x.removes) * 100)}%</td><td>${x.showEst ? rating(hh.price, hh.est, hh.comps).html : '<span class="muted">Hidden by you</span>'}</td></tr>`; }).join('')}
+      </tbody></table></div>
+      <div class="split" style="margin-top:14px">
+        <div class="card ptool"><div><h3>Pricing tool · ${h.addr}</h3><p class="sub" style="margin:0">${h.est ? `Estimated value ${usd(h.est)} from ${h.comps} nearby sales` : `Only ${h.comps} similar sales nearby, so there’s no estimate yet`}</p></div>
+          ${h.est ? `<div class="row" style="justify-content:space-between"><span class="pbig" id="pPrice">${usd(price)}</span><span id="pBadge">${r.html}</span></div>
+          <input type="range" id="pSlider" min="${lo}" max="${hi}" step="1000" value="${price}" aria-label="Test a list price">
+          <div class="row" style="justify-content:space-between;font-size:12px;color:var(--muted)"><span>${usd(lo)}</span><span>${usd(hi)}</span></div>
+          <div class="minis"><div class="stat"><div class="l">Vs. estimate</div><div class="v" id="pPct">${(r.pct * 100 > 0 ? '+' : '') + (r.pct * 100).toFixed(1)}%</div></div><div class="stat"><div class="l">Active buyers in budget</div><div class="v" id="pBuyers">${inBudget}</div></div><div class="stat"><div class="l">Current list price</div><div class="v">${usd(h.price)}</div></div></div>
+          <div class="row"><button class="btn ghost sm" data-act="resetPrice">Back to list price</button></div>` : '<div class="callout">Value ratings need at least 3 comparable sales. This listing shows “No value rating” to buyers.</div>'}
+          <div class="toggle"><label for="showEst"><b>Show the value estimate on this listing</b><small>Your seller can opt out. MLS rules let a listing broker turn estimates off.</small></label><input type="checkbox" id="showEst" ${L.showEst ? 'checked' : ''}></div>
+        </div>
+        <div class="card"><h3>Comparable sales</h3><p class="sub">The sales the estimate is built from</p>
+          <div class="tablewrap"><table><thead><tr><th>Address</th><th>Sold</th><th class="num">Price</th><th class="num">$/sq ft</th></tr></thead><tbody>
+          ${(COMPS[L.id] || []).map(([a, d, p, s]) => `<tr><td>${a}</td><td class="nowrap">${d}</td><td class="num">${usd(p)}</td><td class="num">$${Math.round(p / s)}</td></tr>`).join('')}
+          </tbody></table></div>
+          <p class="muted" style="font-size:12px;margin:10px 0 0">An estimate, not an appraisal. Buyers see “Room to negotiate” rather than “Overpriced”.</p>
+        </div>
+      </div>`;
+  };
+
+  R.buy = () => {
+    const on = MARKETS.filter(m => m.on), avg = on.length ? on.reduce((a, m) => a + m.price, 0) / on.length : 0;
+    return head('Buy leads', 'Leads are charged when delivered. Refunds for bad contact details within 7 days.', '<button class="btn danger" data-act="pauseAll">Pause all buying</button>') + `
+      <div class="split">
+        <div class="stack">
+          <div class="card"><h3>Markets</h3><p class="sub">Prices are set by Nestmatch per market</p>
+            ${MARKETS.map((m, i) => `<div class="toggle"><label for="mk${i}"><b>${m.name}</b><small>${usd(m.price)} per buyer lead · exclusive for 30 days</small></label><input type="checkbox" id="mk${i}" data-market="${i}" ${m.on ? 'checked' : ''}></div>`).join('')}
+          </div>
+          <div class="card"><h3>Lead types</h3>
+            <div class="toggle"><label for="lt1"><b>Buyer leads</b><small>Unrepresented buyers in your markets, with full contact details.</small></label><input type="checkbox" id="lt1" checked></div>
+            <div class="toggle"><label for="lt2"><b>Agent connections on my listings</b><small>$30 each. You’re introduced to the buyer’s agent, never the buyer.</small></label><input type="checkbox" id="lt2" checked></div>
+            <div class="toggle"><label for="lt3"><b>Referral leads (pay at closing)</b><small>30% of your commission, through Nestmatch Realty. Your broker signed the agreement on Oct 2.</small></label><input type="checkbox" id="lt3"></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card"><h3>Weekly budget</h3><p class="sub">Buying stops for the week when you reach it</p>
+            <div class="row" style="justify-content:space-between"><span class="pbig" id="bAmt">${usd(st.budget)}</span><span class="muted" id="bLeads">${avg ? `About ${Math.floor(st.budget / avg)} leads a week` : 'No markets selected'}</span></div>
+            <input type="range" id="budget" min="0" max="1500" step="50" value="${st.budget}" style="width:100%;accent-color:var(--accent)" aria-label="Weekly budget">
+          </div>
+          <div class="card"><h3>November charges</h3><p class="sub">Invoiced to Front Range Homes on Dec 5</p>
+            <dl class="kv"><dt>Buyer leads</dt><dd>15 × $70–$80 · $1,120</dd><dt>Agent connections</dt><dd>4 × $30 · $120</dd><dt>Refunds</dt><dd>1 pending (Ben Adler)</dd><dt>Total so far</dt><dd><b>$1,240</b></dd></dl>
+          </div>
+          <div class="card"><h3>Alerts</h3>
+            <div class="toggle"><label for="n1"><b>Text me the moment a lead arrives</b></label><input type="checkbox" id="n1" checked></div>
+            <div class="toggle"><label for="n2"><b>Remind me at 10 minutes if I haven’t replied</b></label><input type="checkbox" id="n2" checked></div>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  const embed = () => `<script src="https://widgets.nestmatch.app/swipe.js"\n  data-agent="ana-ruiz"\n  data-brokerage="front-range-homes"\n  data-color="${st.siteColor}"\n  data-market="lakewood-golden"><\/script>`;
+  const sitePreview = () => {
+    const c = st.siteColor;
+    return `<div class="site"><div class="sh"><b>Ana Ruiz · Front Range Homes</b><nav><span>Homes</span><span>About</span><span>Contact</span></nav></div>
+      <div class="hero"><div><h4 style="color:${c}">${st.siteHead.replace(/</g, '&lt;')}</h4><p>Answer six questions, swipe on Lakewood and Golden homes, and decide together with everyone you’re moving with.</p><span class="cta" style="background:${c}">Start matching</span></div>
+      ${st.widget ? `<div class="widget">${pic('h6')}<div><span>$735,000</span><span style="color:${c}">Good value</span></div></div>` : '<div></div>'}</div>
+      <div class="row3">${['h6', 'h7', 'h2'].map(id => { const h = HOMES[id]; return `<div class="lc">${pic(id)}<div><b>$${h.price.toLocaleString()}</b><small>${h.addr}</small></div></div>`; }).join('')}</div>
+      <div class="sf">Listing data from REcolorado, deemed reliable but not guaranteed. Each listing shows its listing brokerage. Front Range Homes · Equal Housing Opportunity.</div></div>`;
+  };
+  R.website = () => {
+    const colors = ['#1e5a45', '#2b4c7e', '#8a3b2e', '#5a3e85'];
+    return head('My website', 'anaruiz.frontrangehomes.example · live', '<button class="btn" data-act="publishSite">Publish changes</button>') + `
+      <div class="split">
+        <div class="stack">
+          <div class="card"><h3>Look and words</h3>
+            <div class="formrow" style="margin-bottom:12px"><label for="siteHead">Headline</label><input class="field" id="siteHead" value="${st.siteHead.replace(/"/g, '&quot;')}" maxlength="70"></div>
+            <div class="formrow" style="margin-bottom:12px"><span>Accent colour</span><div class="swatches">${colors.map(c => `<button class="swatch" data-color="${c}" style="background:${c}" aria-label="Colour ${c}" aria-pressed="${c === st.siteColor}"></button>`).join('')}</div></div>
+            <div class="toggle"><label for="wOn"><b>Show the swipe widget</b><small>Visitors swipe on your markets. Every lead goes to you, free.</small></label><input type="checkbox" id="wOn" ${st.widget ? 'checked' : ''}></div>
+            <div class="toggle"><span><b>Value badges</b><small>Your site shows Great value, Good value and Fair price only.</small></span><span class="muted" style="font-size:12px">Set by Nestmatch</span></div>
+            <div class="toggle"><span><b>MLS attribution and disclaimers</b><small>Added to every listing automatically.</small></span><span class="muted" style="font-size:12px">Always on</span></div>
+          </div>
+          <div class="card"><h3>Embed the widget on another site</h3><p class="sub">Paste this before the closing body tag</p>
+            <pre class="code" id="embed">${embed().replace(/</g, '&lt;')}</pre>
+            <div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="copyEmbed">Copy code</button></div>
+          </div>
+        </div>
+        <div class="card"><h3>Preview</h3><p class="sub">Desktop view of your site</p><div id="sitePreview">${sitePreview()}</div></div>
+      </div>`;
+  };
+
+  R.reports = () => {
+    const broker = st.role === 'broker';
+    const fl = st.rptFreq === 'Daily' ? 'Every day' : st.rptFreq === 'Weekly' ? `Every ${{ Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday' }[st.rptDay]}` : 'On the 1st of each month';
+    const [hh, mm] = st.rptTime.split(':').map(Number), tl = `${(hh % 12) || 12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`;
+    return head('Reports', broker ? 'Your summary and the Front Range Homes performance report' : 'Your performance summary, emailed on your schedule') + `
+      <div class="split">
+        <div class="card"><h3>My weekly summary</h3><p class="sub">Last report: Nov 15 – 21</p>
+          <div class="minis"><div class="stat"><div class="l">Leads</div><div class="v">21</div></div><div class="stat"><div class="l">Contacted</div><div class="v">88%</div></div><div class="stat"><div class="l">First reply</div><div class="v">9 min</div></div><div class="stat"><div class="l">Under contract</div><div class="v">2</div></div><div class="stat"><div class="l">Clients’ saves</div><div class="v">146</div></div><div class="stat"><div class="l">Listing saves</div><div class="v">74</div></div></div>
+          <div class="row" style="margin-top:12px"><button class="btn ghost sm" data-act="openLast">Open last report</button></div>
+        </div>
+        <div class="card"><h3>Email schedule</h3><p class="sub">Sent to ana.ruiz@frontrangehomes.example</p>
+          <div class="grid2">
+            <div class="formrow"><label for="rFreq">How often</label><select class="select" id="rFreq">${['Daily', 'Weekly', 'Monthly'].map(f => `<option${f === st.rptFreq ? ' selected' : ''}>${f}</option>`).join('')}</select></div>
+            ${st.rptFreq === 'Weekly' ? `<div class="formrow"><label for="rDay">Day</label><select class="select" id="rDay">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(d => `<option${d === st.rptDay ? ' selected' : ''}>${d}</option>`).join('')}</select></div>` : '<div></div>'}
+            <div class="formrow"><label for="rTime">Time (Mountain)</label><input class="field" type="time" id="rTime" value="${st.rptTime}"></div>
+          </div>
+          <p class="callout info" style="margin:12px 0 0" id="rNext">${fl} at ${tl}.</p>
+          <div class="row" style="margin-top:12px"><button class="btn" data-act="saveRpt">Save schedule</button></div>
+        </div>
+      </div>
+      ${broker ? `<h3 style="font-size:14px;margin:18px 0 8px">Front Range Homes · brokerage report</h3>
+        <div class="tablewrap"><table><thead><tr><th>Agent</th><th class="num">Leads (30d)</th><th class="num">First reply</th><th class="num">Contacted</th><th class="num">Active clients</th></tr></thead><tbody>
+        ${TEAM.filter(t => t[5] === 'Active').map(t => `<tr><td><b>${t[0]}</b></td><td class="num">${t[1]}</td><td class="num">${t[2]}</td><td class="num">${t[3]}</td><td class="num">${t[4]}</td></tr>`).join('')}
+        </tbody></table></div><p class="muted" style="font-size:12px;margin-top:8px">Emailed to broker@frontrangehomes.example every Monday at 7:00 AM. Nestmatch admins manage the brokerage schedule.</p>` : ''}`;
+  };
+
+  R.team = () => head('Team', 'Front Range Homes · 31 of 35 seats used', '<button class="btn" data-act="invite">Invite agent</button>') + `
+    <div class="split">
+      <div class="tablewrap"><table><thead><tr><th>Agent</th><th class="num">Leads (30d)</th><th class="num">First reply</th><th class="num">Contacted</th><th class="num">Clients</th><th>Status</th></tr></thead><tbody>
+      ${TEAM.map(t => `<tr><td class="nowrap"><b>${t[0]}</b></td><td class="num">${t[1]}</td><td class="num">${t[2]}</td><td class="num">${t[3]}</td><td class="num">${t[4]}</td><td><span class="pill ${t[5] === 'Active' ? 'ok' : 'warn'}">${t[5]}</span></td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="card"><h3>Sharing leads inside the brokerage</h3><p class="sub">For leads bought at brokerage level</p>
+        <div class="formrow"><label for="routing">Routing rule</label><select class="select" id="routing">${['Fastest responder first', 'Round robin', 'By market', 'Listing agent first'].map(r => `<option${r === st.routing ? ' selected' : ''}>${r}</option>`).join('')}</select></div>
+        <p class="muted" style="font-size:12px;margin:10px 0 0" id="routingNote">${routingNote()}</p>
+      </div>
+    </div>`;
+  function routingNote() {
+    return { 'Fastest responder first': 'New leads go to the agent with the quickest median first reply this week. Unanswered after 15 minutes, they move to the next agent.', 'Round robin': 'New leads rotate through active agents in order.', 'By market': 'Each agent owns the markets assigned to them.', 'Listing agent first': 'Buyers who saved one of our listings go to that listing agent first.' }[st.routing];
+  }
+
+  function render() { $('#main').innerHTML = R[st.view](); }
+
+  /* ---------- drawers ---------- */
+  const drawer = $('#drawer'), scrim = $('#scrim');
+  function openDrawer(title, sub, body) {
+    drawer.innerHTML = `<div class="dhead"><div><h3>${title}</h3><p>${sub}</p></div><button class="x" data-act="close" aria-label="Close">✕</button></div><div class="dbody">${body}</div>`;
+    drawer.hidden = false; scrim.hidden = false;
+  }
+  function closeDrawer() { drawer.hidden = true; scrim.hidden = true; drawer.innerHTML = ''; }
+  scrim.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.hidden) closeDrawer(); });
+
+  function openLead(id) {
+    const l = LEADS.find(x => x.id === id);
+    if (l.type === 'Agent connection') {
+      const h = HOMES[l.listing];
+      return openDrawer('Agent connection', `${l.id} · ${l.when}`, `
+        <div class="callout info">A buyer represented by another agent saved your listing <b>${h.addr}</b>. You’re introduced to their agent. The buyer’s own details aren’t shared, so work through their agent.</div>
+        <div class="dsec"><h4>Your listing</h4>${homeRow(l.listing)}</div>
+        <div class="dsec"><h4>Buyer’s agent</h4><dl class="kv"><dt>Agent</dt><dd>${l.buyerAgent}</dd><dt>Brokerage</dt><dd>${l.buyerAgentCo}</dd></dl>
+          <div class="contact" style="margin-top:10px"><span class="line"><span>${l.agentPhone}</span><button class="copy" data-copy="${l.agentPhone}">Copy</button></span><span class="line"><span>${l.agentEmail}</span><button class="copy" data-copy="${l.agentEmail}">Copy</button></span></div></div>
+        <div class="dsec"><h4>Stage</h4><div class="row"><select class="select" id="stageSel" data-id="${l.id}" style="max-width:220px">${STAGES.slice(0, 6).map(s => `<option${s === l.stage ? ' selected' : ''}>${s}</option>`).join('')}</select>${l.stage === 'New' ? `<button class="btn" data-act="contacted" data-id="${l.id}">I reached the agent</button>` : ''}</div></div>
+        <p class="muted" style="font-size:12px;margin:0">Charged $30. This follows NAR Code of Ethics Article 16.</p>`);
+    }
+    openDrawer(l.name, `${l.type} · ${l.market} · ${l.when}`, `
+      ${l.stage === 'New' ? `<div class="callout" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>Reply soon. Buyers often contact several agents.</span>${clockHTML(l)}</div>` : ''}
+      <div class="dsec"><h4>Contact</h4><div class="contact"><span class="line"><span>${l.phone}</span><button class="copy" data-copy="${l.phone}">Copy</button></span><span class="line"><span>${l.email}</span><button class="copy" data-copy="${l.email}">Copy</button></span></div>
+        <p class="muted" style="font-size:12px;margin:8px 0 0">${l.consent}</p></div>
+      <div class="dsec"><h4>What they want</h4><p style="margin:0 0 8px;font-size:13px">${l.criteria}</p><div class="narr">${l.narrative}</div><p class="muted" style="font-size:12px;margin:8px 0 0">${l.household}</p></div>
+      ${l.saved.length ? `<div class="dsec"><h4>Homes they saved</h4><div class="homes">${l.saved.map(s => homeRow(s)).join('')}</div></div>` : ''}
+      <div class="dsec"><h4>Stage</h4><div class="row"><select class="select" id="stageSel" data-id="${l.id}" style="max-width:220px">${STAGES.map(s => `<option${s === l.stage ? ' selected' : ''}>${s}</option>`).join('')}</select>${l.stage === 'New' ? `<button class="btn" data-act="contacted" data-id="${l.id}">Mark contacted</button>` : ''}</div>
+        <p class="muted" style="font-size:12px;margin:8px 0 0">${l.excl !== '—' ? `Yours exclusively until ${l.excl}.` : ''}</p></div>
+      ${l.stage === 'Refund requested' ? `<div class="callout">Refund requested: ${l.refundReason}. Nestmatch reviews requests within 2 business days.</div>`
+        : `<div class="dsec"><h4>Something wrong?</h4><div class="row"><select class="select" id="refundWhy" style="max-width:260px"><option value="">Request a refund because…</option><option>Phone number not in service</option><option>Fake or duplicate request</option><option>Already my client</option><option>Not looking to buy</option></select><button class="btn danger sm" data-act="refund" data-id="${l.id}" id="refundBtn" disabled>Request refund</button></div><p class="muted" style="font-size:12px;margin:8px 0 0">Within 7 days of delivery.</p></div>`}`);
+  }
+  function openClient(id) {
+    const c = CLIENTS.find(x => x.id === id);
+    const sendable = Object.keys(HOMES).filter(h => h !== 'h5' && ![...c.common, ...c.waiting.map(w => w[0]), ...c.denied.map(d => d[0])].includes(h));
+    openDrawer(c.name, `${c.members.length} member${c.members.length > 1 ? 's' : ''} · ${c.stage} · active ${c.last}`, `
+      <div class="dsec"><h4>Members</h4><dl class="kv">${c.members.map(m => `<dt>${m[1]}</dt><dd>${m[0]}</dd>`).join('')}</dl></div>
+      <div class="dsec"><h4>Common: everyone saved</h4><div class="homes">${c.common.map(h => homeRow(h)).join('') || '<p class="muted" style="margin:0">Nothing yet.</p>'}</div></div>
+      ${c.waiting.length ? `<div class="dsec"><h4>Waiting on someone</h4><div class="homes">${c.waiting.map(([h, who]) => homeRow(h, `<small style="display:block;color:var(--partner)">Saved by ${who} · others haven’t seen it</small>`)).join('')}</div></div>` : ''}
+      ${c.denied.length ? `<div class="dsec"><h4>Denied</h4><div class="homes">${c.denied.map(([h, who]) => homeRow(h, `<small style="display:block;color:var(--bad)">Removed by ${who}</small>`)).join('')}</div><p class="muted" style="font-size:12px;margin:8px 0 0">Members’ reasons stay private, even from you.</p></div>` : ''}
+      ${c.differ ? `<div class="dsec"><h4>Where they differ</h4><div class="legend"><span><i class="sw" style="background:var(--accent)"></i>${c.a}</span><span><i class="sw" style="background:var(--partner)"></i>${c.b}</span></div>
+        <div class="diff">${c.differ.map(([f, a, b]) => `<div class="diff-row"><span>${f}</span><span class="diff-track"><i style="left:${b * 10}%;background:var(--partner)"></i><i style="left:${a * 10}%;background:var(--accent)"></i></span></div>`).join('')}</div></div>` : ''}
+      <div class="dsec"><h4>House profile</h4><p style="margin:0 0 8px;font-size:13px">${c.criteria}</p><div class="narr">${c.narrative}</div></div>
+      <div class="dsec"><h4>How their goals changed</h4><ul class="hist">${c.history.map(([d, t]) => `<li><time>${d}</time><span>${t}</span></li>`).join('')}</ul></div>
+      <div class="dsec"><h4>Send them a home</h4><div class="row"><select class="select" id="sendHome" style="max-width:280px">${sendable.map(h => `<option value="${h}">${HOMES[h].addr} · ${k(HOMES[h].price)}</option>`).join('')}</select><button class="btn" data-act="sendHome" data-id="${c.id}">Send</button></div>
+        <p class="muted" style="font-size:12px;margin:8px 0 0">It goes to the front of every member’s deck, marked “From Ana”.</p></div>
+      <div class="dsec"><h4>Private notes</h4><textarea class="field" id="note" placeholder="Only you can see these notes">${c.note || ''}</textarea></div>`);
+  }
+
+  /* ---------- events ---------- */
+  const app = $('#app');
+  app.addEventListener('click', async e => {
+    const nav = e.target.closest('[data-view]'); if (nav) return go(nav.dataset.view);
+    const cp = e.target.closest('[data-copy]');
+    if (cp) { try { await navigator.clipboard.writeText(cp.dataset.copy); toast('Copied.'); } catch { toast(cp.dataset.copy); } return; }
+    const a = e.target.closest('[data-act]');
+    if (a) {
+      if (a.disabled) return;
+      const id = a.dataset.id, act = a.dataset.act;
+      if (act === 'close') return closeDrawer();
+      if (act === 'contacted') { const l = LEADS.find(x => x.id === id); l.stage = 'Contacted'; renderSide(); render(); openLead(id); return toast(`${l.name === 'Represented buyer' ? 'Connection' : l.name} marked contacted. First reply: ${waitMin(l)} min.`); }
+      if (act === 'refund') { const l = LEADS.find(x => x.id === id); l.refundReason = $('#refundWhy').value; l.stage = 'Refund requested'; renderSide(); render(); openLead(id); return toast('Refund requested. Nestmatch replies within 2 business days.'); }
+      if (act === 'sendHome') { const c = CLIENTS.find(x => x.id === id), h = $('#sendHome').value; c.waiting.push([h, 'Ana']); render(); openClient(id); return toast(`Sent ${HOMES[h].addr} to the ${c.name}.`); }
+      if (act === 'resetPrice') { st.testPrice = null; return render(); }
+      if (act === 'pauseAll') { MARKETS.forEach(m => m.on = false); render(); return toast('Lead buying paused in all markets.'); }
+      if (act === 'publishSite') return toast('Published. Your site updates in about a minute.');
+      if (act === 'copyEmbed') { try { await navigator.clipboard.writeText(embed()); toast('Embed code copied.'); } catch { const r = document.createRange(); r.selectNodeContents($('#embed')); getSelection().removeAllRanges(); getSelection().addRange(r); toast('Press Ctrl+C or ⌘C to copy the selected code.'); } return; }
+      if (act === 'saveRpt') return toast(`Saved. ${$('#rNext').textContent}`);
+      if (act === 'openLast') return toast('This would open the Nov 15 – 21 report as a PDF.');
+      if (act === 'invite') { TEAM.push(['New agent (invited)', 0, '—', '—', 0, 'Invited']); render(); return toast('Invite sent. 32 of 35 seats used.'); }
+      return;
+    }
+    const lead = e.target.closest('[data-lead]'); if (lead) return openLead(lead.dataset.lead);
+    const cl = e.target.closest('[data-client]'); if (cl) return openClient(cl.dataset.client);
+    const li = e.target.closest('[data-listing]'); if (li) { st.listing = li.dataset.listing; st.testPrice = null; return render(); }
+    const lt = e.target.closest('[data-ltab]'); if (lt) { st.leadTab = lt.dataset.ltab; return render(); }
+    const sw = e.target.closest('[data-color]'); if (sw) { st.siteColor = sw.dataset.color; return render(); }
+  });
+  app.addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'pSlider') {
+      const h = HOMES[st.listing], p = +t.value, r = rating(p, h.est, h.comps); st.testPrice = p;
+      $('#pPrice').textContent = usd(p); $('#pBadge').innerHTML = r.html; $('#pPct').textContent = (r.pct > 0 ? '+' : '') + (r.pct * 100).toFixed(1) + '%';
+      $('#pBuyers').textContent = Math.max(4, Math.round(150 - (p / h.est - 0.88) * 520));
+    }
+    if (t.id === 'budget') {
+      st.budget = +t.value; const on = MARKETS.filter(m => m.on), avg = on.length ? on.reduce((a, m) => a + m.price, 0) / on.length : 0;
+      $('#bAmt').textContent = usd(st.budget); $('#bLeads').textContent = avg ? `About ${Math.floor(st.budget / avg)} leads a week` : 'No markets selected';
+    }
+    if (t.id === 'siteHead') { st.siteHead = t.value; $('#sitePreview').innerHTML = sitePreview(); }
+    if (t.id === 'note') CLIENTS.find(c => drawer.querySelector('h3').textContent === c.name).note = t.value;
+  });
+  app.addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'stageSel') { const l = LEADS.find(x => x.id === t.dataset.id); l.stage = t.value; renderSide(); render(); toast(`Stage set to ${t.value}.`); }
+    if (t.id === 'refundWhy') $('#refundBtn').disabled = !t.value;
+    if (t.dataset.market) { MARKETS[+t.dataset.market].on = t.checked; render(); toast(`${MARKETS[+t.dataset.market].name} ${t.checked ? 'added' : 'removed'}.`); }
+    if (t.id === 'showEst') { LISTINGS.find(x => x.id === st.listing).showEst = t.checked; render(); toast(t.checked ? 'Buyers see the value badge on this listing.' : 'Value estimate hidden on this listing.'); }
+    if (t.id === 'wOn') { st.widget = t.checked; $('#sitePreview').innerHTML = sitePreview(); }
+    if (['rFreq', 'rDay', 'rTime'].includes(t.id)) { st[{ rFreq: 'rptFreq', rDay: 'rptDay', rTime: 'rptTime' }[t.id]] = t.value; render(); }
+    if (t.id === 'routing') { st.routing = t.value; $('#routingNote').textContent = routingNote(); toast('Routing rule saved.'); }
+  });
+  $('#roleSel').addEventListener('change', e => {
+    st.role = e.target.value; $('#avatar').textContent = st.role === 'broker' ? 'FR' : 'AR';
+    go(st.view); toast(st.role === 'broker' ? 'Now viewing as the Front Range Homes broker admin.' : 'Now viewing as Ana Ruiz.');
+  });
+  setInterval(() => { $$('[data-clock]').forEach(el => { const l = LEADS.find(x => x.id === el.dataset.clock); if (!l || l.stage !== 'New') return; const m = waitMin(l); el.textContent = `Waiting ${m} min`; el.className = `clock ${m >= 30 ? 'late' : m >= 10 ? 'soon' : ''}`; }); }, 15000);
+
+  go('today');
+})();
+</script>
