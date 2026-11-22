@@ -226,6 +226,30 @@ input.cell:focus { border-color: var(--accent); outline: none; }
 .lock { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; }
 
 /* toast */
+/* reports */
+.rgrid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 1060px) { .rgrid { grid-template-columns: minmax(0, 1fr); } }
+.builder { display: grid; gap: 12px; }
+.builder .select { width: 100%; font-size: 13px; font-weight: 400; }
+.seclist { display: grid; gap: 6px; }
+.seclist label { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 500; cursor: pointer; }
+.seclist input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.reportdoc { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; min-width: 0; }
+.rhead { padding: 16px 18px; border-bottom: 1px solid var(--line); background: var(--accent-soft); }
+.rhead .eyebrow { margin: 0 0 2px; }
+.rhead h3 { font-family: var(--font-display); font-size: 20px; margin: 0; font-weight: 800; letter-spacing: -0.01em; }
+.rhead p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.rsec { padding: 14px 18px; border-bottom: 1px solid var(--line); min-width: 0; }
+.rsec h4 { margin: 0 0 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
+.minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.rfoot { padding: 10px 18px; font-size: 12px; color: var(--muted); background: var(--chip); }
+.h3x { font-size: 14px; margin: 20px 0 8px; }
+.sched td:first-child { min-width: 200px; }
+.sched td:nth-child(5) { min-width: 120px; }
+.drawer .select { width: 100%; font-size: 13px; font-weight: 400; }
+.drawer .formrow { margin-bottom: 10px; }
+.drawer input.field { font-size: 13px; font-weight: 400; }
+
 .toast { position: absolute; left: 50%; bottom: 22px; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; z-index: 40; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; transition: opacity .2s, transform .2s; max-width: calc(100% - 32px); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
@@ -273,11 +297,13 @@ input.cell:focus { border-color: var(--accent); outline: none; }
     value: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
     vendors: '<path d="M3 7h18l-1.5 5h-15zM5 12v8h14v-8M9 20v-5h6v5"/>',
     compliance: '<path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+    reports: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 17v-3M12 17v-6M15 17v-4"/>',
   };
   const VIEWS = [
     { id: 'overview', name: 'Overview', group: 'Business', purpose: 'The morning check: buyers, leads sold, revenue by stream, the lead funnel, and anything that needs a person today.', tryit: 'Click an item under “Needs attention” to jump straight to it.' },
     { id: 'brokerages', name: 'Brokerages', group: 'Business', purpose: 'Tenants: every brokerage, its agents, licensed states, MLS memberships, plan and lead spend. A solo agent is a brokerage of one.', tryit: 'Open a brokerage to see its agents, then pause or resume its lead buying.' },
     { id: 'clients', name: 'Buyers', group: 'Business', purpose: 'Platform-level buyer accounts with their house profile, household, agent links and consent. Contact details stay masked until an admin gives a reason.', tryit: 'Open Jordan Rivera, pick a reason and reveal contact info. The access shows up in Compliance → Audit log.' },
+    { id: 'reports', name: 'Reports', group: 'Business', purpose: 'Performance reports for each brokerage and each agent: leads, response time, conversion, listing interest, client activity and billing. Build one, preview it, then email it on a schedule.', tryit: 'Switch to an agent report and untick a section. Then click “Schedule this report”, choose Weekly, and add an address outside the brokerage to see the warning.' },
     { id: 'leads', name: 'Leads', group: 'Marketplace', purpose: 'Every lead sold: buyer leads, agent connections and vendor leads, with the routing trace that explains who got it and why.', tryit: 'Open the disputed lead and refund it, or open the “Under contract” referral and record the closing price.' },
     { id: 'pricing', name: 'Pricing & rules', group: 'Marketplace', purpose: 'Per-market prices, exclusivity windows and referral percentages, plus routing rules. The compliance rules are locked on.', tryit: 'Change a price and save. The change is written to the audit log.' },
     { id: 'feeds', name: 'MLS feeds', group: 'Data', purpose: 'Health of each MLS listing feed and its display-rule compliance, plus applications in progress.', tryit: 'The IRES feed is past the 12-hour refresh limit. Click “Refresh now”.' },
@@ -296,9 +322,16 @@ input.cell:focus { border-color: var(--accent); outline: none; }
     { id: 'b6', name: 'Nestmatch Realty', agents: 3, states: ['CO', 'AZ', 'TX'], mls: ['REcolorado', 'IRES'], plan: 'House brokerage', leads: 0, spend: 0, status: 'Internal', note: 'Sponsors MLS feeds; receives referral fees' },
   ];
   const AGENT_POOL = ['Ana Ruiz', 'Marcus Webb', 'Lena Park', 'Diego Alvarez', 'Hannah Cole', 'Ravi Menon', 'Grace Kim', 'Owen Brooks'];
+  const ROSTER = {
+    b1: ['Marcus Webb', 'Grace Kim', 'Diego Alvarez', 'Priscilla Hart'],
+    b2: ['Ana Ruiz', 'Hannah Cole', 'Ravi Menon', 'Owen Brooks'],
+    b3: ['Lena Park', 'Noah Fischer', 'Ines Duarte', 'Sofia Marin'],
+    b5: ['Jonah Reyes', 'Claire Dubois', 'Theo Larsen', 'Mia Santos'],
+    b6: ['Avery Quinn', 'Jamal Hughes', 'Beth Arnold'],
+  };
   const agentsFor = b => b.id === 'b4'
     ? [{ name: 'Dana Okafor', role: 'Designated broker', markets: 'Denver central', clients: 18, leads: 22 }]
-    : AGENT_POOL.slice(0, Math.min(4, b.agents)).map((n, i) => ({ name: n, role: i === 0 ? 'Designated broker' : 'Agent', markets: ['Denver central', 'Lakewood / Golden', 'Aurora', 'Boulder County'].at(i % 4), clients: 40 - i * 7, leads: Math.round(b.leads / Math.max(1, b.agents) * (1.6 - i * .2)) }));
+    : (ROSTER[b.id] || AGENT_POOL).slice(0, Math.min(4, b.agents)).map((n, i) => ({ name: n, role: i === 0 ? 'Designated broker' : 'Agent', markets: ['Denver central', 'Lakewood / Golden', 'Aurora', 'Boulder County'].at(i % 4), clients: 40 - i * 7, leads: Math.round(b.leads / Math.max(1, b.agents) * (1.6 - i * .2)) }));
 
   const CLIENTS = [
     { id: 'c1', name: 'Jordan Rivera', email: 'jordan.rivera@example.com', phone: '(555) 014-2290', market: '80206 · Denver', agent: 'Dana Okafor', household: 'Rivera household (2)', members: 'Jordan Rivera (primary), Sam Rivera (partner)', saves: 14, removes: 22, consent: 'Agent + vendors', consentOk: true, last: '2 hours ago',
@@ -329,7 +362,7 @@ input.cell:focus { border-color: var(--accent); outline: none; }
       trace: [['Consent on file', 'Agent + vendors'], ['Buyer has an agent?', 'Yes: Ana Ruiz'], ['Listing agent buys leads?', 'Yes: Front Range Homes'], ['Agent connection', 'Created, but both agents are in the same brokerage']] },
     { id: 'L-20431', type: 'Buyer lead', client: 'K. Nguyen', market: 'Denver central', property: 'Search profile', to: 'Summit Ridge Realty · Marcus Webb', model: 'flat', price: 80, status: 'Refunded', created: 'Nov 16, 10:48 AM',
       trace: [['Consent on file', 'Agent leads'], ['Buyer has an agent?', 'No'], ['Sold to market buyer', 'Summit Ridge Realty'], ['Refunded', 'Invalid phone number']] },
-    { id: 'L-20398', type: 'Buyer lead', client: 'A. Brooks', market: 'Boulder County', property: 'Search profile', to: 'Summit Ridge Realty · Lena Park', model: 'referral', price: null, status: 'Closed', closing: 742000, created: 'Sep 30, 3:12 PM',
+    { id: 'L-20398', type: 'Buyer lead', client: 'A. Brooks', market: 'Boulder County', property: 'Search profile', to: 'Summit Ridge Realty · Grace Kim', model: 'referral', price: null, status: 'Closed', closing: 742000, created: 'Sep 30, 3:12 PM',
       trace: [['Consent on file', 'Agent leads'], ['Buyer has an agent?', 'No'], ['Referral market', 'Boulder County: 35% of buyer-agent commission'], ['Closed', 'Sale closed Nov 14 at $742,000']] },
   ];
 
@@ -382,8 +415,34 @@ input.cell:focus { border-color: var(--accent); outline: none; }
     { when: 'Nov 21, 9:02 AM', who: 'System', what: 'Updated consent text to v3 for new sign-ups', why: 'Counsel-approved wording' },
   ];
 
+  /* ---------- reporting data ---------- */
+  const DOMAINS = { b1: 'summitridge.example', b2: 'frontrangehomes.example', b3: 'cherrycreekpartners.example', b4: 'danaokafor.example', b5: 'bouldervalley.example' };
+  const PERIODS = { 'Last 7 days': [0.24, 'Nov 15 – 21, 2026'], 'Month to date': [0.73, 'Nov 1 – 22, 2026'], 'Last 30 days': [1, 'Oct 23 – Nov 21, 2026'], 'Last quarter': [2.9, 'Jul 1 – Sep 30, 2026'] };
+  const SECTIONS = { brokerage: ['Lead performance', 'Conversion funnel', 'Agent leaderboard', 'Listing interest', 'Billing & refunds'], agent: ['Lead performance', 'Conversion funnel', 'Client activity', 'Listing interest'] };
+  const RESP = { b1: '7 min', b2: '11 min', b3: '18 min', b4: '9 min', b5: '—' };
+  const LISTINGS = {
+    b1: [['4120 Larkspur Lane', 142, 61, 'Great value'], ['88 Harbor Row, Unit 12', 97, 88, 'Fair price'], ['250 Summit Ave, Unit 7', 63, 71, 'Room to negotiate']],
+    b2: [['17 Juniper Court', 121, 73, 'Above market'], ['31 Fenwick Row', 88, 40, 'No value rating']],
+    b3: [['902 Aster Way', 134, 22, 'Good value']],
+    b4: [['1650 Clarkson St', 41, 19, 'Fair price']],
+  };
+  let schedSeq = 5;
+  const SCHEDULES = [
+    { id: 's1', type: 'brokerage', subject: 'b2', secs: SECTIONS.brokerage.slice(), freq: 'Weekly', day: 'Mon', dom: 1, time: '07:00', recipients: ['broker@frontrangehomes.example', 'ops@frontrangehomes.example'], format: 'Email summary + PDF', status: 'Active' },
+    { id: 's2', type: 'agent', subject: 'b1:Marcus Webb', secs: SECTIONS.agent.slice(), freq: 'Daily', day: 'Mon', dom: 1, time: '06:30', recipients: ['marcus.webb@summitridge.example'], format: 'Email summary only', status: 'Active' },
+    { id: 's3', type: 'brokerage', subject: 'b1', secs: ['Lead performance', 'Billing & refunds'], freq: 'Monthly', day: 'Mon', dom: 1, time: '08:00', recipients: ['broker@summitridge.example', 'accounting@summitridge.example'], format: 'PDF + CSV attachments', status: 'Paused' },
+    { id: 's4', type: 'agent', subject: 'b2:Ana Ruiz', secs: SECTIONS.agent.slice(), freq: 'Weekly', day: 'Fri', dom: 1, time: '16:00', recipients: ['ana.ruiz@frontrangehomes.example'], format: 'Email summary + PDF', status: 'Active' },
+  ];
+  const RUNS = [
+    ['Nov 22, 6:30 AM', 'Marcus Webb · daily summary', 'marcus.webb@summitridge.example', 'Delivered'],
+    ['Nov 21, 4:00 PM', 'Ana Ruiz · weekly summary', 'ana.ruiz@frontrangehomes.example', 'Delivered · opened'],
+    ['Nov 16, 7:00 AM', 'Front Range Homes · weekly performance', 'broker@frontrangehomes.example, ops@frontrangehomes.example', 'Delivered · opened'],
+    ['Nov 1, 8:00 AM', 'Summit Ridge Realty · monthly performance', 'accounting@summitridge.example', 'Bounced'],
+  ];
+
   /* ---------- app state ---------- */
-  const st = { view: 'overview', clientQ: '', leadTab: 'All', compTab: 'privacy', revealed: {}, th: [-5, -2, 2, 5], minComps: 3, idxPositiveOnly: true };
+  const st = { view: 'overview', clientQ: '', leadTab: 'All', compTab: 'privacy', revealed: {}, th: [-5, -2, 2, 5], minComps: 3, idxPositiveOnly: true,
+    rType: 'brokerage', rBrk: 'b2', rAgent: 'Ana Ruiz', rPeriod: 'Month to date', rSecs: new Set([...SECTIONS.brokerage, ...SECTIONS.agent]), draft: null };
   const ME = 'You (ops admin)';
   const nowStamp = () => 'Nov 22, ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const audit = (what, why) => AUDIT.unshift({ when: nowStamp(), who: ME, what, why });
@@ -426,6 +485,7 @@ input.cell:focus { border-color: var(--accent); outline: none; }
     const attn = [
       ['bad', 'IRES feed is past the 12-hour refresh limit', 'Last refresh 14 h 10 min ago. Listings may show stale prices.', 'feeds'],
       ['warn', 'Privacy request PR-118 is due in 2 days', 'Opt out of data sale · California resident', 'compliance'],
+      ['warn', 'A scheduled report bounced', 'Summit Ridge Realty monthly performance · accounting@summitridge.example', 'reports'],
       ['warn', 'Lead L-20455 is disputed', 'Front Range Homes: both agents are in the same brokerage', 'leads'],
       ['info', 'Peak Home Loans is waiting for RESPA review', 'Lender ad for the wrap-up screen, $3,000/month', 'vendors'],
     ];
@@ -577,6 +637,75 @@ input.cell:focus { border-color: var(--accent); outline: none; }
       `<div class="tabs" role="tablist">${tabs.map(([id, n, c]) => `<button class="tab" role="tab" data-ctab="${id}" aria-selected="${id === st.compTab}">${n}<b>${c}</b></button>`).join('')}</div>` + body;
   };
 
+  /* ---------- reports ---------- */
+  const brkOf = id => BROKERAGES.find(b => b.id === id);
+  const slugName = n => n.toLowerCase().replace(/[^a-z ]/g, '').trim().replace(/\s+/g, '.');
+  const subjectName = (type, subj) => type === 'brokerage' ? brkOf(subj).name : `${subj.split(':')[1]} (${brkOf(subj.split(':')[0]).name})`;
+  const defaultRecipient = (type, subj) => type === 'brokerage' ? 'broker@' + DOMAINS[subj] : slugName(subj.split(':')[1]) + '@' + DOMAINS[subj.split(':')[0]];
+  const schedName = s => `${s.type === 'brokerage' ? brkOf(s.subject).name : s.subject.split(':')[1]} · ${s.freq.toLowerCase()} ${s.type === 'brokerage' ? 'performance' : 'summary'}`;
+  const fmtTime = t => { const [h, m] = t.split(':').map(Number); return `${(h % 12) || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
+  const freqLabel = s => s.freq === 'Daily' ? `Daily at ${fmtTime(s.time)}` : s.freq === 'Weekly' ? `Every ${{ Sun: 'Sunday', Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday' }[s.day]} at ${fmtTime(s.time)}` : `Day ${s.dom} of each month at ${fmtTime(s.time)}`;
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const NOW = new Date(2026, 10, 22, 10, 0);
+  function nextSend(s) {
+    const [h, m] = s.time.split(':').map(Number), d = new Date(NOW); d.setHours(h, m, 0, 0);
+    if (s.freq === 'Daily') { if (d <= NOW) d.setDate(d.getDate() + 1); }
+    else if (s.freq === 'Weekly') { d.setDate(d.getDate() + (DAYS.indexOf(s.day) - d.getDay() + 7) % 7); if (d <= NOW) d.setDate(d.getDate() + 7); }
+    else { d.setDate(s.dom); if (d <= NOW) { d.setDate(1); d.setMonth(d.getMonth() + 1); d.setDate(s.dom); } }
+    return `${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at ${fmtTime(s.time)} MT`;
+  }
+  const badgePill = b => ({ 'Great value': 'ok', 'Good value': 'ok', 'Above market': 'warn', 'Room to negotiate': 'bad' }[b] || '');
+
+  function reportHTML() {
+    const t = st.rType, subj = t === 'brokerage' ? st.rBrk : `${st.rBrk}:${st.rAgent}`, [f, range] = PERIODS[st.rPeriod], b = brkOf(st.rBrk);
+    const ags = agentsFor(b), ai = Math.max(0, ags.findIndex(a => a.name === st.rAgent));
+    const base = t === 'brokerage'
+      ? { leads: b.leads, spend: b.spend, resp: RESP[b.id], cr: .86 }
+      : { leads: ags[ai].leads, spend: ags[ai].leads * (b.spend / (b.leads || 1)), resp: ['6 min', '9 min', '14 min', '26 min'].at(ai), cr: [.93, .88, .81, .76].at(ai) };
+    const leads = Math.round(base.leads * f), spend = base.spend * f, refunds = Math.round(leads * .021), cpl = leads ? spend / leads : 0;
+    const fun = [['Leads received', leads], ['Contacted', Math.round(leads * base.cr)], ['Toured a home', Math.round(leads * .34)], ['Under contract', Math.round(leads * .09)], ['Closed', Math.round(leads * .05)]];
+    const stat = ([l, v]) => `<div class="stat"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+    const listings = (LISTINGS[b.id] || []).filter((_, k) => t === 'brokerage' || k === ai);
+    const referral = LEADS.filter(l => l.model === 'referral' && l.closing && l.to.startsWith(b.name)).reduce((s, l) => s + l.closing * 0.025 * marketRef(l.market) / 100, 0);
+    const S = {
+      'Lead performance': `<div class="minis">${[['Leads received', leads.toLocaleString()], ['Lead spend', usd(spend)], ['Cost per lead', leads ? usd(cpl) : '—'], ['Median first response', leads ? base.resp : '—'], ['Refunds', refunds]].map(stat).join('')}</div>`,
+      'Conversion funnel': leads
+        ? `<div class="bars">${fun.map(([n, v]) => `<div class="bar" title="${n}: ${v} (${Math.round(v / leads * 100)}% of leads)"><span>${n}</span><span class="track"><span class="fill" style="display:block;width:${v / leads * 100}%"></span></span><span class="val">${v.toLocaleString()}</span></div>`).join('')}</div>`
+        : '<p class="muted" style="margin:0">No leads in this period.</p>',
+      'Agent leaderboard': `<div class="tablewrap"><table><thead><tr><th>Agent</th><th class="num">Leads</th><th class="num">Contacted</th><th class="num">First response</th><th class="num">Under contract</th></tr></thead><tbody>${ags.map((a, i) => `<tr><td><b>${a.name}</b></td><td class="num">${Math.round(a.leads * f)}</td><td class="num">${[93, 88, 81, 76].at(i)}%</td><td class="num">${['6 min', '9 min', '14 min', '26 min'].at(i)}</td><td class="num">${Math.round(a.leads * f * .09)}</td></tr>`).join('')}</tbody></table></div>`,
+      'Listing interest': listings.length
+        ? `<div class="tablewrap"><table><thead><tr><th>Listing</th><th class="num">Saves</th><th class="num">Removes</th><th class="num">Save rate</th><th>Value badge</th></tr></thead><tbody>${listings.map(([a, s, r, v]) => `<tr><td><b>${a}</b></td><td class="num">${Math.round(s * f)}</td><td class="num">${Math.round(r * f)}</td><td class="num">${Math.round(s / (s + r) * 100)}%</td><td><span class="pill ${badgePill(v)}">${v}</span></td></tr>`).join('')}</tbody></table></div>`
+        : '<p class="muted" style="margin:0">No active listings in this period.</p>',
+      'Billing & refunds': `<dl class="kv"><dt>Lead charges</dt><dd>${usd(spend)}</dd><dt>Refunds</dt><dd>${refunds} lead${refunds === 1 ? '' : 's'} · ${usd(refunds * cpl)}</dd><dt>Referral fees</dt><dd>${referral ? usd(referral) + ' from closed sales' : 'None this period'}</dd><dt>Invoice</dt><dd>Monthly, due on the 5th</dd></dl>`,
+      'Client activity': (() => { const c = ags[ai].clients; return `<div class="minis">${[['Active clients', c], ['Homes saved by clients', Math.round(c * 6 * f)], ['Households waiting on a partner', Math.round(c * .3)], ['Profiles updated after a check-in', Math.round(c * .15 * f)]].map(stat).join('')}</div>`; })(),
+    };
+    const secs = SECTIONS[t].filter(s => st.rSecs.has(s));
+    return `<div class="reportdoc"><div class="rhead"><p class="eyebrow">${t === 'brokerage' ? 'Brokerage performance' : 'Agent summary'}</p><h3>${subjectName(t, subj)}</h3><p>${range} · generated Nov 22, 2026</p></div>
+      ${secs.map(s => `<div class="rsec"><h4>${s}</h4>${S[s]}</div>`).join('') || '<div class="rsec muted">Pick at least one section.</div>'}
+      <div class="rfoot">Buyers appear by initials only. Contact details stay in the agent portal.</div></div>`;
+  }
+
+  R.reports = () => {
+    const t = st.rType, brks = BROKERAGES.filter(b => b.status !== 'Internal'), ags = agentsFor(brkOf(st.rBrk));
+    if (!ags.some(a => a.name === st.rAgent)) st.rAgent = ags[0].name;
+    const builder = `<div class="card builder"><h3>Build a report</h3>
+      <div class="formrow"><label for="rType">Report</label><select class="select" id="rType"><option value="brokerage"${t === 'brokerage' ? ' selected' : ''}>Brokerage performance</option><option value="agent"${t === 'agent' ? ' selected' : ''}>Agent summary</option></select></div>
+      <div class="formrow"><label for="rBrk">Brokerage</label><select class="select" id="rBrk">${brks.map(b => `<option value="${b.id}"${b.id === st.rBrk ? ' selected' : ''}>${b.name}</option>`).join('')}</select></div>
+      ${t === 'agent' ? `<div class="formrow"><label for="rAgent">Agent</label><select class="select" id="rAgent">${ags.map(a => `<option${a.name === st.rAgent ? ' selected' : ''}>${a.name}</option>`).join('')}</select></div>` : ''}
+      <div class="formrow"><label for="rPeriod">Period</label><select class="select" id="rPeriod">${Object.keys(PERIODS).map(p => `<option${p === st.rPeriod ? ' selected' : ''}>${p}</option>`).join('')}</select></div>
+      <div class="formrow"><span>Sections</span><div class="seclist">${SECTIONS[t].map(s => `<label><input type="checkbox" data-sec="${s}"${st.rSecs.has(s) ? ' checked' : ''}>${s}</label>`).join('')}</div></div>
+      <div class="row"><button class="btn" data-act="newSchedule">Schedule this report</button><button class="btn ghost" data-act="sendOnce">Send once</button></div>
+      <p class="muted" style="font-size:12px;margin:0">Brokerage reports go to the broker and anyone they approve. Agent summaries go to that agent.</p></div>`;
+    const sched = `<h3 class="h3x">Scheduled reports</h3><div class="tablewrap"><table class="sched"><thead><tr><th>Report</th><th>When</th><th>Next send</th><th>Recipients</th><th>Format</th><th>Status</th><th></th></tr></thead><tbody>
+      ${SCHEDULES.map(s => `<tr class="click" data-open="schedule" data-id="${s.id}"><td><b>${schedName(s)}</b><small>${s.secs.length} section${s.secs.length > 1 ? 's' : ''}</small></td><td class="nowrap">${freqLabel(s)}</td><td class="nowrap">${s.status === 'Paused' ? '<span class="muted">Paused</span>' : nextSend(s)}</td><td>${s.recipients.map(r => `<span class="tag">${r}</span>`).join('')}</td><td>${s.format}</td><td><span class="pill ${s.status === 'Active' ? 'ok' : 'warn'}">${s.status}</span></td><td class="nowrap"><button class="btn ghost sm" data-act="sendNow" data-id="${s.id}">Send now</button> <button class="btn ghost sm" data-act="toggleSched" data-id="${s.id}">${s.status === 'Active' ? 'Pause' : 'Resume'}</button></td></tr>`).join('') || '<tr><td colspan="7" class="muted">No scheduled reports yet.</td></tr>'}
+      </tbody></table></div>`;
+    const runs = `<h3 class="h3x">Recent sends</h3><div class="tablewrap"><table><thead><tr><th>Sent</th><th>Report</th><th>To</th><th>Result</th></tr></thead><tbody>
+      ${RUNS.slice(0, 8).map(([w, n, to, r]) => `<tr><td class="nowrap">${w}</td><td>${n}</td><td>${to}</td><td><span class="pill ${r.startsWith('Bounced') ? 'bad' : 'ok'}">${r}</span></td></tr>`).join('')}
+      </tbody></table></div>`;
+    return head('Reports', 'Performance reports for brokerages and agents, sent by email on a schedule', '<button class="btn ghost" data-act="newSchedule">New schedule</button>') +
+      `<div class="rgrid">${builder}<div id="reportPreview">${reportHTML()}</div></div>` + sched + runs;
+  };
+
   function render() { $('#main').innerHTML = R[st.view](); }
 
   /* ---------- drawers ---------- */
@@ -597,7 +726,7 @@ input.cell:focus { border-color: var(--accent); outline: none; }
       <div class="dsec"><h4>Agents${b.agents > ag.length ? ` (showing ${ag.length} of ${b.agents})` : ''}</h4>
         <div class="tablewrap"><table><thead><tr><th>Agent</th><th>Market</th><th class="num">Clients</th><th class="num">Leads</th></tr></thead><tbody>${ag.map(a => `<tr><td><b>${a.name}</b><small>${a.role}</small></td><td>${a.markets}</td><td class="num">${a.clients}</td><td class="num">${a.leads}</td></tr>`).join('')}</tbody></table></div></div>
       ${b.status === 'Internal' ? '<div class="callout info">This is Nestmatch’s own brokerage. It holds the MLS memberships and receives referral fees, so it can’t buy leads.</div>'
-        : `<div class="row"><button class="btn ${b.status === 'Paused' ? '' : 'danger'}" data-act="toggleBrokerage" data-id="${b.id}">${b.status === 'Paused' ? 'Resume lead buying' : 'Pause lead buying'}</button><button class="btn ghost" data-act="viewAs" data-id="${b.id}">View as this brokerage</button></div>`}`);
+        : `<div class="row"><button class="btn ${b.status === 'Paused' ? '' : 'danger'}" data-act="toggleBrokerage" data-id="${b.id}">${b.status === 'Paused' ? 'Resume lead buying' : 'Pause lead buying'}</button><button class="btn ghost" data-act="viewAs" data-id="${b.id}">View as this brokerage</button><button class="btn ghost" data-act="brkReport" data-id="${b.id}">Reports</button></div>`}`);
   };
   D.client = id => {
     const c = CLIENTS.find(x => x.id === id), shown = st.revealed[id];
@@ -642,16 +771,88 @@ input.cell:focus { border-color: var(--accent); outline: none; }
         : '<div class="callout info">Approved for flat-fee ads. Per-lead deals stay off for settlement-service providers.</div>'}</div>` : ''}`);
   };
 
+  D.schedule = id => {
+    const src = id ? SCHEDULES.find(x => x.id === id) : null;
+    const subj = st.rType === 'brokerage' ? st.rBrk : `${st.rBrk}:${st.rAgent}`;
+    const d = src ? { ...src, recipients: [...src.recipients], secs: [...src.secs] }
+      : { id: null, type: st.rType, subject: subj, secs: SECTIONS[st.rType].filter(x => st.rSecs.has(x)), freq: 'Weekly', day: 'Mon', dom: 1, time: '07:00', recipients: [defaultRecipient(st.rType, subj)], format: 'Email summary + PDF', status: 'Active' };
+    st.draft = d;
+    const opt = (arr, cur) => arr.map(v => `<option${String(v) === String(cur) ? ' selected' : ''}>${v}</option>`).join('');
+    openDrawer(src ? 'Edit schedule' : 'Schedule report', `${d.type === 'brokerage' ? 'Brokerage performance' : 'Agent summary'} · ${subjectName(d.type, d.subject)}`, `
+      <div class="dsec"><h4>Report</h4><div class="narr">${d.secs.join(' · ') || 'No sections picked'}</div></div>
+      <div class="dsec"><h4>When</h4>
+        <div class="formrow"><label for="sFreq">Frequency</label><select class="select" id="sFreq" data-s="freq">${opt(['Daily', 'Weekly', 'Monthly'], d.freq)}</select></div>
+        <div class="formrow" id="sDayRow"><label for="sDay">Day of the week</label><select class="select" id="sDay" data-s="day">${opt(DAYS.slice(1).concat('Sun'), d.day)}</select></div>
+        <div class="formrow" id="sDomRow"><label for="sDom">Day of the month</label><select class="select" id="sDom" data-s="dom">${opt(Array.from({ length: 28 }, (_, i) => i + 1), d.dom)}</select></div>
+        <div class="formrow"><label for="sTime">Time (Mountain Time, Denver)</label><input class="field" type="time" id="sTime" data-s="time" value="${d.time}"></div>
+        <p class="muted" style="font-size:12px;margin:0" id="sCovers"></p>
+      </div>
+      <div class="dsec"><h4>Delivery</h4>
+        <div class="formrow"><label for="sRcpt">Recipients (comma-separated)</label><input class="field" id="sRcpt" data-s="rcpt" value="${d.recipients.join(', ')}" autocomplete="off"></div>
+        <div class="callout" id="sWarn" hidden></div>
+        <div class="formrow" style="margin-top:10px"><label for="sFmt">Format</label><select class="select" id="sFmt" data-s="fmt">${opt(['Email summary + PDF', 'Email summary only', 'PDF + CSV attachments'], d.format)}</select></div>
+      </div>
+      <div class="callout info" id="sNext"></div>
+      <div class="row"><button class="btn" data-act="saveSchedule" id="sSave">${src ? 'Save changes' : 'Save schedule'}</button><button class="btn ghost" data-act="sendTest">Send a test</button>${src ? '<button class="btn danger" data-act="deleteSchedule">Delete</button>' : ''}</div>`);
+    updateDraft();
+  };
+  function updateDraft() {
+    const d = st.draft; if (!d || drawer.hidden) return;
+    const g = k => drawer.querySelector(`[data-s="${k}"]`);
+    d.freq = g('freq').value; d.day = g('day').value; d.dom = +g('dom').value; d.time = g('time').value || '07:00'; d.format = g('fmt').value;
+    d.recipients = g('rcpt').value.split(',').map(x => x.trim()).filter(Boolean);
+    $('#sDayRow').hidden = d.freq !== 'Weekly'; $('#sDomRow').hidden = d.freq !== 'Monthly';
+    $('#sCovers').textContent = `Each report covers the ${{ Daily: 'previous day', Weekly: 'previous 7 days', Monthly: 'previous calendar month' }[d.freq]}.`;
+    const bid = d.subject.split(':')[0], dom = DOMAINS[bid];
+    const bad = d.recipients.filter(r => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(r));
+    const ext = d.recipients.filter(r => !bad.includes(r) && !r.endsWith('@' + dom));
+    const warn = bad.length ? `Check ${bad.join(', ')}: that isn’t a valid email address.`
+      : ext.length ? `${ext.join(', ')} ${ext.length > 1 ? 'are' : 'is'} outside ${brkOf(bid).name}. This report includes lead data, so the broker must approve outside recipients before the first send.` : '';
+    const w = $('#sWarn'); w.hidden = !warn; w.textContent = warn;
+    $('#sNext').textContent = d.recipients.length ? `Next send: ${nextSend(d)}, to ${d.recipients.length} recipient${d.recipients.length > 1 ? 's' : ''}.` : 'Add at least one recipient.';
+    $('#sSave').disabled = !d.recipients.length || bad.length > 0 || !d.secs.length;
+  }
+
   /* ---------- events ---------- */
   const app = $('#app');
   app.addEventListener('click', e => {
     const nav = e.target.closest('[data-view]'); if (nav) { go(nav.dataset.view); return; }
-    const row = e.target.closest('[data-open]'); if (row) { D[row.dataset.open](row.dataset.id); return; }
-    const lt = e.target.closest('[data-ltab]'); if (lt) { st.leadTab = lt.dataset.ltab; render(); return; }
-    const ct = e.target.closest('[data-ctab]'); if (ct) { st.compTab = ct.dataset.ctab; render(); return; }
-    const a = e.target.closest('[data-act]'); if (!a || a.disabled) return;
+    const a = e.target.closest('[data-act]');
+    if (!a) {
+      const row = e.target.closest('[data-open]'); if (row) { D[row.dataset.open](row.dataset.id); return; }
+      const lt = e.target.closest('[data-ltab]'); if (lt) { st.leadTab = lt.dataset.ltab; render(); return; }
+      const ct = e.target.closest('[data-ctab]'); if (ct) { st.compTab = ct.dataset.ctab; render(); return; }
+      return;
+    }
+    if (a.disabled) return;
     const id = a.dataset.id, act = a.dataset.act;
     if (act === 'close') return closeDrawer();
+    if (act === 'brkReport') { st.rType = 'brokerage'; st.rBrk = id; return go('reports'); }
+    if (act === 'newSchedule') return D.schedule(null);
+    if (act === 'saveSchedule') {
+      const d = st.draft, isNew = !d.id;
+      if (isNew) { d.id = 's' + (schedSeq++); SCHEDULES.unshift(d); } else SCHEDULES[SCHEDULES.findIndex(x => x.id === d.id)] = d;
+      audit(`${isNew ? 'Created' : 'Updated'} report schedule: ${schedName(d)}`, `To ${d.recipients.join(', ')}`);
+      closeDrawer(); if (st.view === 'reports') render(); return toast(`Scheduled. Next send ${nextSend(d)}.`);
+    }
+    if (act === 'sendTest') { RUNS.unshift([nowStamp(), `${schedName(st.draft)} (test)`, st.draft.recipients[0] || '—', 'Delivered']); if (st.view === 'reports') render(); return toast(`Test sent to ${st.draft.recipients[0]}.`); }
+    if (act === 'deleteSchedule') {
+      const d = st.draft; SCHEDULES.splice(SCHEDULES.findIndex(x => x.id === d.id), 1);
+      audit(`Deleted report schedule: ${schedName(d)}`, 'Admin action'); closeDrawer(); render(); return toast('Schedule deleted.');
+    }
+    if (act === 'sendNow') {
+      const s = SCHEDULES.find(x => x.id === id); RUNS.unshift([nowStamp(), schedName(s), s.recipients.join(', '), 'Delivered']);
+      audit(`Sent ${schedName(s)} now`, 'Manual send'); render(); return toast(`Sent to ${s.recipients.length} recipient${s.recipients.length > 1 ? 's' : ''}.`);
+    }
+    if (act === 'toggleSched') {
+      const s = SCHEDULES.find(x => x.id === id); s.status = s.status === 'Active' ? 'Paused' : 'Active';
+      audit(`${s.status === 'Paused' ? 'Paused' : 'Resumed'} report schedule: ${schedName(s)}`, 'Admin action'); render();
+      return toast(s.status === 'Paused' ? 'Schedule paused.' : `Resumed. Next send ${nextSend(s)}.`);
+    }
+    if (act === 'sendOnce') {
+      const subj = st.rType === 'brokerage' ? st.rBrk : `${st.rBrk}:${st.rAgent}`, to = defaultRecipient(st.rType, subj);
+      RUNS.unshift([nowStamp(), `${subjectName(st.rType, subj)} · ${st.rPeriod.toLowerCase()} (one-off)`, to, 'Delivered']); render(); return toast(`Report sent to ${to}.`);
+    }
     if (act === 'invite') return toast('Invite sent. The brokerage sets up its license and MLS details on sign-up.');
     if (act === 'toggleBrokerage') {
       const b = BROKERAGES.find(x => x.id === id); b.status = b.status === 'Paused' ? 'Active' : 'Paused'; b.note = b.status === 'Paused' ? 'Paused by ops admin' : '';
@@ -684,6 +885,7 @@ input.cell:focus { border-color: var(--accent); outline: none; }
   });
   app.addEventListener('input', e => {
     const t = e.target;
+    if (t.dataset.s) { updateDraft(); return; }
     if (t.id === 'clientQ') { st.clientQ = t.value; const pos = t.selectionStart; render(); const n = $('#clientQ'); n.focus(); n.setSelectionRange(pos, pos); }
     if (t.dataset.price) PRICING[+t.dataset.price][t.dataset.k] = +t.value;
     if (t.dataset.th) { st.th[+t.dataset.th] = +t.value; $('#distBox').innerHTML = distHTML(); }
@@ -698,6 +900,13 @@ input.cell:focus { border-color: var(--accent); outline: none; }
     if (e.target.id === 'why') $('#revealBtn').disabled = !e.target.value;
     if (e.target.closest('#respaChecks')) $('#approveBtn').disabled = [...document.querySelectorAll('#respaChecks input')].some(i => !i.checked);
     if (e.target.id === 'vIdx') st.idxPositiveOnly = e.target.checked;
+    const t = e.target;
+    if (t.dataset.s) updateDraft();
+    if (t.id === 'rType') { st.rType = t.value; render(); }
+    if (t.id === 'rBrk') { st.rBrk = t.value; render(); }
+    if (t.id === 'rAgent') { st.rAgent = t.value; $('#reportPreview').innerHTML = reportHTML(); }
+    if (t.id === 'rPeriod') { st.rPeriod = t.value; $('#reportPreview').innerHTML = reportHTML(); }
+    if (t.dataset.sec) { t.checked ? st.rSecs.add(t.dataset.sec) : st.rSecs.delete(t.dataset.sec); $('#reportPreview').innerHTML = reportHTML(); }
   });
 
   go('overview');
