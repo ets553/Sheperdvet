@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Clickable storyboard of the public Nestmatch website: home, search, listing page, agents page and privacy choices.">
+<meta name="robots" content="noindex">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Nestmatch Website</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: storyboard notes on top, then a browser frame holding the public site (sticky site header, page body, footer). */
+:root {
+  --bg: #eef1ef; --panel: #ffffff; --ink: #14231d; --muted: #5c6b64; --line: #dde3df; --chip: #f1f4f2;
+  --accent: #1e5a45; --accent-ink: #ffffff; --accent-soft: #dcebe4; --sun: #f2b33d; --sun-soft: #fcefd2;
+  --good: #1f8a5b; --bad: #c2413a; --warn: #a8670f; --partner: #b5476b;
+  --site: #fbfcfb; --frame: #d5dcd8; --deep: #12352a; --deep-ink: #e8f1ec;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832; --chip: #1c2722;
+    --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e; --sun-soft: #3a2f17;
+    --good: #4cc38a; --bad: #ef6f66; --warn: #e8b04b; --partner: #e8799d;
+    --site: #121a17; --frame: #26322d; --deep: #0a1f18; --deep-ink: #dbe8e1;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1412; --panel: #161f1b; --ink: #e6eee9; --muted: #98a8a0; --line: #2a3832; --chip: #1c2722;
+  --accent: #5cc29a; --accent-ink: #0b1a14; --accent-soft: #1d3a2f; --sun: #f5c25e; --sun-soft: #3a2f17;
+  --good: #4cc38a; --bad: #ef6f66; --warn: #e8b04b; --partner: #e8799d;
+  --site: #121a17; --frame: #26322d; --deep: #0a1f18; --deep-ink: #dbe8e1;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+a { color: inherit; }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 18px; }
+
+.sbhead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: end; }
+@media (max-width: 860px) { .sbhead { grid-template-columns: minmax(0, 1fr); } }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; color: var(--muted); margin: 0 0 6px; }
+h1.sb { font-family: var(--font-display); font-weight: 800; font-size: 32px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -0.01em; }
+.lede { color: var(--muted); margin: 0; max-width: 62ch; font-size: 14px; }
+.notes { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; font-size: 14px; }
+.notes .n { font-size: 12px; color: var(--muted); }
+.notes b.t { font-size: 15px; }
+.notes .try { font-size: 13px; }
+.notes .try span { font-weight: 600; color: var(--accent); }
+.pages { display: flex; gap: 6px; flex-wrap: wrap; }
+.pages button { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.pages button[aria-current="page"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+.browser { border-radius: 14px; overflow: hidden; border: 1px solid var(--frame); background: var(--site); box-shadow: 0 24px 50px -30px rgba(10, 30, 20, .45); }
+.chrome { display: flex; align-items: center; gap: 12px; padding: 9px 14px; background: var(--frame); }
+.dots { display: flex; gap: 6px; flex: none; }
+.dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--panel); opacity: .8; }
+.url { flex: 1; min-width: 0; background: var(--panel); border-radius: 8px; padding: 4px 12px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.viewport { position: relative; height: 820px; overflow-y: auto; background: var(--site); }
+@media (max-width: 860px) { .viewport { height: 84dvh; min-height: 640px; } }
+
+/* site chrome */
+.sitehead { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--site) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.sitehead .in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; gap: 18px; padding: 12px 28px; }
+.logo { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: 20px; background: none; border: 0; cursor: pointer; padding: 0; color: var(--ink); }
+.logo svg { width: 24px; height: 24px; color: var(--accent); }
+.sitenav { display: flex; gap: 4px; margin-left: 12px; }
+.sitenav button { background: none; border: 0; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted); }
+.sitenav button:hover, .sitenav button[aria-current="page"] { color: var(--ink); background: var(--chip); }
+.headcta { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+@media (max-width: 760px) { .sitenav { display: none; } .sitehead .in { padding: 10px 16px; } .headcta .ghost { display: none; } }
+.page { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+@media (max-width: 760px) { .page { padding: 0 16px; } }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 15px; padding: 0 18px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.sm { height: 36px; font-size: 13px; padding: 0 12px; border-radius: 10px; }
+.btn.sun { background: var(--sun); border-color: var(--sun); color: #1b1300; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* home */
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 40px; align-items: center; padding: 56px 0 48px; }
+@media (max-width: 900px) { .hero { grid-template-columns: minmax(0, 1fr); padding: 32px 0; } }
+.hero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(40px, 6vw, 68px); line-height: .98; margin: 0 0 16px; letter-spacing: -0.025em; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero p.big { font-size: 18px; color: var(--muted); margin: 0 0 24px; max-width: 46ch; }
+.searchbox { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 8px; display: grid; gap: 8px; box-shadow: 0 10px 30px -20px rgba(10, 30, 20, .4); max-width: 560px; }
+.seg { display: flex; gap: 4px; }
+.seg button { border: 0; background: none; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--chip); color: var(--ink); }
+.searchrow { display: flex; gap: 8px; }
+.searchrow input { flex: 1; min-width: 0; height: 48px; border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; background: var(--site); font-size: 16px; }
+@media (max-width: 520px) { .searchrow { flex-direction: column; } }
+.trust { font-size: 13px; color: var(--muted); margin-top: 14px; }
+.phone { width: min(300px, 100%); aspect-ratio: 300 / 600; margin: 0 auto; background: #0f1714; border-radius: 40px; padding: 10px; position: relative; box-shadow: 0 30px 60px -30px rgba(10, 30, 20, .5); }
+.phone .scr { height: 100%; background: #fbfcfb; border-radius: 31px; overflow: hidden; display: flex; flex-direction: column; color: #14231d; }
+.phone .bar { height: 26px; }
+.phone .ttl { padding: 0 16px 8px; font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.phone .card { margin: 0 12px; flex: 1; border-radius: 18px; overflow: hidden; border: 1px solid #dde3df; display: flex; flex-direction: column; background: #fff; transform: rotate(-3deg); box-shadow: 0 10px 20px -12px rgba(0,0,0,.35); }
+.phone .card svg { width: 100%; flex: 1; min-height: 0; display: block; }
+.phone .info { padding: 10px 12px; display: grid; gap: 4px; }
+.phone .info b { font-family: var(--font-display); font-size: 20px; }
+.phone .info small { color: #5c6b64; font-size: 11px; }
+.phone .acts { display: flex; justify-content: center; gap: 22px; padding: 12px 0 16px; }
+.phone .acts span { width: 46px; height: 46px; border-radius: 50%; border: 2px solid; display: grid; place-items: center; font-weight: 700; }
+
+.band { padding: 56px 0; }
+.band h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 3.6vw, 40px); line-height: 1.08; letter-spacing: -0.015em; margin: 0 0 10px; text-wrap: balance; }
+.band p.sub { color: var(--muted); max-width: 60ch; margin: 0 0 28px; font-size: 16px; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; list-style: none; padding: 0; margin: 0; counter-reset: s; }
+@media (max-width: 800px) { .steps { grid-template-columns: minmax(0, 1fr); } }
+.steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.steps li::before { content: counter(s); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--sun); color: #1b1300; font-weight: 800; font-family: var(--font-display); margin-bottom: 12px; }
+.steps h3 { margin: 0 0 6px; font-size: 18px; }
+.steps p { margin: 0; color: var(--muted); font-size: 14px; }
+.duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+@media (max-width: 860px) { .duo { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+.hhdemo { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 10px; }
+.hhtabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.hhtabs span { border: 1.5px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; }
+.hhtabs span.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.mini { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 6px; }
+.mini .t { width: 70px; height: 54px; border-radius: 9px; overflow: hidden; }
+.mini .t svg { width: 100%; height: 100%; display: block; }
+.mini b { font-variant-numeric: tabular-nums; }
+.mini small { display: block; color: var(--muted); font-size: 12px; }
+.votes { display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+.vote { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 1px 8px; background: var(--chip); }
+.vote.y { color: var(--good); } .vote.n { color: var(--bad); }
+.scale { display: grid; gap: 10px; }
+.scale div { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 14px; }
+@media (max-width: 520px) { .scale div { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.markets { display: flex; gap: 8px; flex-wrap: wrap; }
+.markets button { border: 1.5px solid var(--line); background: var(--panel); border-radius: 999px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+.markets button small { font-weight: 500; color: var(--muted); margin-left: 6px; }
+.agentband { background: var(--deep); color: var(--deep-ink); border-radius: 24px; padding: 40px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; margin: 8px 0 56px; }
+.agentband h2 { color: #fff; }
+.agentband p { color: color-mix(in srgb, var(--deep-ink) 80%, transparent); margin: 0; }
+@media (max-width: 760px) { .agentband { grid-template-columns: minmax(0, 1fr); padding: 28px 20px; } }
+
+/* value badge */
+.vbadge { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.meter { display: inline-flex; gap: 2px; }
+.meter i { width: 5px; height: 11px; border-radius: 2px; background: currentColor; opacity: .25; }
+.meter i.on { opacity: 1; }
+.vb-great { background: var(--good); color: #fff; }
+.vb-good { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+.vb-fair { background: var(--chip); color: var(--ink); }
+.vb-above { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.vb-high { background: color-mix(in srgb, var(--bad) 13%, transparent); color: var(--bad); }
+.vb-none { background: var(--chip); color: var(--muted); }
+
+/* search */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 18px 0 14px; position: sticky; top: 61px; background: var(--site); z-index: 5; }
+.filters select, .filters input { height: 40px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: var(--panel); font-size: 14px; }
+.filters input { min-width: 0; flex: 1 1 180px; }
+.chk { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px; font-weight: 500; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; height: 40px; background: var(--panel); cursor: pointer; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.results { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; padding-bottom: 40px; align-items: start; }
+@media (max-width: 900px) { .results { grid-template-columns: minmax(0, 1fr); } .map { display: none; } }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 560px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.lcard { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; cursor: pointer; text-align: left; padding: 0; display: flex; flex-direction: column; }
+.lcard:hover { box-shadow: 0 12px 24px -16px rgba(0,0,0,.35); }
+.lcard .ph { position: relative; height: 150px; }
+.lcard .ph svg { width: 100%; height: 100%; display: block; }
+.lcard .heart { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.92); border: 0; display: grid; place-items: center; cursor: pointer; color: #14231d; }
+.lcard .heart[aria-pressed="true"] { color: #c2413a; }
+.lcard .bd { padding: 12px 14px 14px; display: grid; gap: 4px; }
+.lcard .pr { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lcard .pr b { font-family: var(--font-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.lcard .sp { font-size: 13px; font-variant-numeric: tabular-nums; }
+.lcard .ad { font-size: 13px; color: var(--muted); }
+.lcard .co { font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; margin-top: 4px; }
+.map { position: sticky; top: 130px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--chip); }
+.map svg { display: block; width: 100%; height: auto; }
+.disclaimer { font-size: 12px; color: var(--muted); padding: 0 0 28px; max-width: 90ch; }
+
+/* listing */
+.crumbs { padding: 18px 0 10px; font-size: 13px; color: var(--muted); }
+.crumbs button { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; }
+.ldetail { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; padding-bottom: 40px; align-items: start; }
+@media (max-width: 900px) { .ldetail { grid-template-columns: minmax(0, 1fr); } }
+.gallery { border-radius: 18px; overflow: hidden; height: 340px; }
+.gallery svg { width: 100%; height: 100%; display: block; }
+.lt h1 { font-family: var(--font-display); font-weight: 800; font-size: 38px; margin: 18px 0 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.015em; }
+.lt .addr { color: var(--muted); margin: 0 0 12px; }
+.facts { display: flex; gap: 18px; flex-wrap: wrap; font-size: 15px; font-variant-numeric: tabular-nums; margin-bottom: 18px; }
+.facts span b { font-weight: 700; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+.box h3 { margin: 0 0 10px; font-size: 16px; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tags span { background: var(--chip); border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.side { position: sticky; top: 80px; display: grid; gap: 16px; }
+.form { display: grid; gap: 10px; }
+.form label.f { display: grid; gap: 5px; font-size: 13px; font-weight: 600; }
+.form input[type=text], .form input[type=email], .form input[type=tel], .form textarea, .form select { height: 42px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: var(--site); font-size: 15px; width: 100%; }
+.form textarea { height: auto; min-height: 70px; padding: 10px 12px; resize: vertical; }
+.consent { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 12px; color: var(--muted); line-height: 1.45; cursor: pointer; }
+.consent input { width: 18px; height: 18px; accent-color: var(--accent); margin: 1px 0 0; }
+.done { background: var(--accent-soft); border-radius: 12px; padding: 14px; font-size: 14px; }
+.pay { font-family: var(--font-display); font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums; }
+
+/* agents page */
+.ahero { padding: 56px 0 24px; max-width: 760px; }
+.ahero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(36px, 5vw, 56px); line-height: 1; letter-spacing: -0.02em; margin: 0 0 14px; text-wrap: balance; }
+.ahero p { font-size: 18px; color: var(--muted); margin: 0 0 20px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 10px 0 40px; }
+@media (max-width: 700px) { .stats { grid-template-columns: minmax(0, 1fr); } }
+.stats div { border-top: 3px solid var(--sun); padding-top: 10px; }
+.stats b { display: block; font-family: var(--font-display); font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stats span { color: var(--muted); font-size: 14px; }
+.products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .products { grid-template-columns: minmax(0, 1fr); } }
+.prod { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; gap: 8px; align-content: start; }
+.prod h3 { margin: 0; font-size: 18px; }
+.prod p { margin: 0; color: var(--muted); font-size: 14px; }
+.prod .price { font-weight: 700; font-size: 14px; color: var(--accent); }
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .plans { grid-template-columns: minmax(0, 1fr); } }
+.plan { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: grid; gap: 10px; align-content: start; }
+.plan.feature { border: 2px solid var(--accent); }
+.plan h3 { margin: 0; font-size: 18px; }
+.plan .amt { font-family: var(--font-display); font-weight: 800; font-size: 36px; font-variant-numeric: tabular-nums; }
+.plan .amt small { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--muted); }
+.plan ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+.faq { display: grid; gap: 8px; max-width: 760px; }
+.faq details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+.faq summary { font-weight: 600; cursor: pointer; }
+.faq p { color: var(--muted); margin: 8px 0 0; font-size: 14px; }
+
+/* privacy */
+.priv { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding: 10px 0 40px; align-items: start; }
+@media (max-width: 860px) { .priv { grid-template-columns: minmax(0, 1fr); } }
+.toggle { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.toggle:last-child { border-bottom: 0; }
+.toggle small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.toggle input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; margin-top: 2px; }
+.toggle label { cursor: pointer; }
+.radios { display: grid; gap: 8px; }
+.radios label { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 14px; }
+.radios input { accent-color: var(--accent); }
+
+/* footer */
+.foot { background: var(--deep); color: var(--deep-ink); margin-top: 20px; }
+.foot .in { max-width: 1120px; margin: 0 auto; padding: 32px 28px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 24px; font-size: 13px; }
+@media (max-width: 760px) { .foot .in { grid-template-columns: minmax(0, 1fr); padding: 24px 16px; } }
+.foot b { color: #fff; display: block; margin-bottom: 8px; }
+.foot button { display: block; background: none; border: 0; padding: 3px 0; color: var(--deep-ink); cursor: pointer; text-align: left; font-size: 13px; }
+.foot button:hover { text-decoration: underline; }
+.foot p { margin: 0 0 8px; color: color-mix(in srgb, var(--deep-ink) 75%, transparent); }
+.eho { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: #fff; }
+.eho svg { width: 22px; height: 22px; }
+
+.toast { position: absolute; left: 50%; bottom: 22px; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; z-index: 40; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 600; transition: opacity .2s, transform .2s; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toastwrap { position: relative; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.001ms !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="sbhead">
+    <div>
+      <p class="eyebrow">Public website storyboard · clickable prototype</p>
+      <h1 class="sb">Nestmatch Website</h1>
+      <p class="lede">The site buyers land on: what Nestmatch is, a searchable listing site with value badges, listing pages that capture consented leads, a page that sells to agents, and privacy controls. All homes, prices and people are example data.</p>
+    </div>
+    <div class="notes" aria-live="polite">
+      <div class="pages" id="pages"></div>
+      <span class="n" id="noteNum"></span>
+      <b class="t" id="noteTitle"></b>
+      <span id="notePurpose"></span>
+      <span class="try" id="noteTry"></span>
+    </div>
+  </header>
+
+  <div class="browser toastwrap">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url" id="url">nestmatch.com</span></div>
+    <div class="viewport" id="vp">
+      <header class="sitehead"><div class="in">
+        <button class="logo" data-go="home" aria-label="Nestmatch home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg>Nestmatch</button>
+        <nav class="sitenav"><button data-go="search">Search homes</button><button data-go="home" data-anchor="how">How it works</button><button data-go="agents">For agents</button></nav>
+        <div class="headcta"><a class="btn ghost sm" href="agent.html">Agent sign in</a><a class="btn sm" href="app.html">Start matching</a></div>
+      </div></header>
+      <div id="content"></div>
+      <footer class="foot"><div class="in">
+        <div><b>Nestmatch</b><p>Nestmatch Realty LLC, a licensed real estate brokerage in Colorado, Arizona and Texas. Example license numbers would appear here.</p>
+          <span class="eho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><path d="M8 13h8M8 16h8"/></svg>Equal Housing Opportunity</span></div>
+        <div><b>Buyers</b><button data-go="search">Search homes</button><button data-go="home" data-anchor="value">How value badges work</button><button data-go="home" data-anchor="household">Searching as a household</button></div>
+        <div><b>Company</b><button data-go="agents">For agents</button><button data-go="privacy">Privacy policy</button><button data-go="privacy">Your privacy choices</button><button data-go="home" data-anchor="fair">Fair housing statement</button></div>
+      </div></footer>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const usd = n => '$' + Math.round(n).toLocaleString();
+
+  function art(kind, sky, wall, trim, uid) {
+    const w = 340, h = 260, g = h * 0.78; let b = '';
+    if (kind === 'free') b = `<path d="M70 ${g} V120 L170 52 L270 120 V${g} Z" fill="${wall}"/><path d="M58 124 L170 44 L282 124" fill="none" stroke="${trim}" stroke-width="10" stroke-linejoin="round"/><rect x="96" y="134" width="44" height="38" fill="#cfe6f2" stroke="${trim}" stroke-width="5"/><rect x="200" y="134" width="44" height="38" fill="#cfe6f2" stroke="${trim}" stroke-width="5"/><rect x="150" y="150" width="40" height="${g - 150}" fill="${trim}"/><rect x="226" y="60" width="18" height="40" fill="${trim}"/><circle cx="30" cy="${g - 38}" r="28" fill="#4f8f5c"/>`;
+    else if (kind === 'condo') b = `<rect x="104" y="30" width="132" height="${g - 30}" fill="${wall}"/><rect x="98" y="24" width="144" height="10" fill="${trim}"/>${[48, 84, 120, 156].map(y => [120, 156, 192].map(x => `<rect x="${x}" y="${y}" width="26" height="24" fill="#cfe6f2" stroke="${trim}" stroke-width="3"/>`).join('')).join('')}<rect x="150" y="${g - 30}" width="40" height="30" fill="${trim}"/><circle cx="96" cy="${g - 20}" r="18" fill="#4f8f5c"/><circle cx="248" cy="${g - 20}" r="18" fill="#4f8f5c"/>`;
+    else if (kind === 'multi') b = `<path d="M50 ${g} V100 L170 40 L290 100 V${g} Z" fill="${wall}"/><path d="M170 100 V${g}" stroke="${trim}" stroke-width="6"/><rect x="78" y="116" width="40" height="34" fill="#cfe6f2" stroke="${trim}" stroke-width="5"/><rect x="222" y="116" width="40" height="34" fill="#cfe6f2" stroke="${trim}" stroke-width="5"/><rect x="118" y="${g - 50}" width="30" height="50" fill="${trim}"/><rect x="192" y="${g - 50}" width="30" height="50" fill="${trim}"/>`;
+    else b = [0, 1, 2].map(i => { const x = 30 + i * 96; return `<path d="M${x} ${g} V110 L${x + 48} 70 L${x + 96} 110 V${g} Z" fill="${i === 1 ? trim : wall}"/><rect x="${x + 16}" y="122" width="26" height="28" fill="#cfe6f2"/><rect x="${x + 54}" y="122" width="26" height="28" fill="#cfe6f2"/><rect x="${x + 36}" y="${g - 44}" width="24" height="44" fill="${i === 1 ? wall : trim}"/>`; }).join('');
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs><linearGradient id="g${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs><rect width="${w}" height="${h}" fill="url(#g${uid})"/><circle cx="${w - 52}" cy="44" r="20" fill="#ffd27a"/><path d="M0 ${g - 30} Q90 ${g - 70} 180 ${g - 40} T340 ${g - 50} V${g} H0Z" fill="#9cc3a6" opacity=".55"/>${b}<rect y="${g}" width="${w}" height="${h - g}" fill="#7fae7a"/><path d="M150 ${g} L120 ${h} H220 L190 ${g}Z" fill="#d9d2c4"/></svg>`;
+  }
+  const RATINGS = [['great', 'Great value'], ['good', 'Good value'], ['fair', 'Fair price'], ['above', 'Above market'], ['high', 'Room to negotiate']];
+  function rating(price, est, comps) {
+    if (!est || comps < 3) return { i: -1, html: '<span class="vbadge vb-none">No value rating</span>' };
+    const p = (price - est) / est, i = p <= -0.05 ? 0 : p <= -0.02 ? 1 : p < 0.02 ? 2 : p < 0.05 ? 3 : 4;
+    return { i, pct: p, html: `<span class="vbadge vb-${RATINGS[i][0]}"><span class="meter" aria-hidden="true">${[0, 1, 2, 3, 4].map(n => `<i${n === i ? ' class="on"' : ''}></i>`).join('')}</span>${RATINGS[i][1]}</span>` };
+  }
+  const badgeFor = i => rating(100 * [0.93, 0.97, 1, 1.03, 1.08][i], 100, 5).html;
+
+  const HOMES = [
+    { id: 'p1', kind: 'free', price: 489000, est: 521000, comps: 6, addr: '4120 Larkspur Lane', area: 'Sloan’s Park, Denver', beds: 3, baths: 2.5, sqft: 1940, year: 1954, lot: '6,250 sq ft', dom: 9, co: 'Summit Ridge Realty', agent: 'Marcus Webb', mls: 'REcolorado #8841207', tags: ['Fenced yard', 'Home office', '2-car garage', 'Central A/C'], sky: ['#a9d4f5', '#e9f4fb'], wall: '#f3ede2', trim: '#2f4a5e', x: 120, y: 120 },
+    { id: 'p2', kind: 'condo', price: 415000, est: 408000, comps: 5, addr: '88 Harbor Row, Unit 12', area: 'Riverside, Denver', beds: 2, baths: 2, sqft: 1210, year: 2016, lot: '—', dom: 21, co: 'Summit Ridge Realty', agent: 'Grace Kim', mls: 'REcolorado #8839921', tags: ['Rooftop deck', 'In-unit laundry', 'EV charger'], sky: ['#f6c9a6', '#fbe9da'], wall: '#d7dde6', trim: '#3a4656', x: 230, y: 95 },
+    { id: 'p3', kind: 'attached', price: 552000, est: 529000, comps: 4, addr: '17 Juniper Court', area: 'Bellmont Heights, Englewood', beds: 3, baths: 3, sqft: 1780, year: 2009, lot: '2,100 sq ft', dom: 12, co: 'Front Range Homes', agent: 'Ana Ruiz', mls: 'REcolorado #8836654', tags: ['Finished basement', 'Open kitchen', 'Walk to park'], sky: ['#c4d9f0', '#eef3fa'], wall: '#e9d7c4', trim: '#7a3b2e', x: 260, y: 220 },
+    { id: 'p4', kind: 'free', price: 468000, est: 486000, comps: 7, addr: '902 Aster Way', area: 'Sloan’s Park, Denver', beds: 2, baths: 2, sqft: 1520, year: 1948, lot: '5,900 sq ft', dom: 3, co: 'Cherry Creek Partners', agent: 'Lena Park', mls: 'REcolorado #8843310', tags: ['Home office', 'Fenced yard', 'Walk to park'], sky: ['#b9dcf3', '#eef6fb'], wall: '#dfe8d8', trim: '#3d5a40', x: 95, y: 160 },
+    { id: 'p5', kind: 'multi', price: 689000, est: 712000, comps: 5, addr: '2215 W 33rd Ave (duplex)', area: 'Highland, Denver', beds: 4, baths: 2, sqft: 2240, year: 1925, lot: '6,250 sq ft', dom: 17, co: 'Dana Okafor Real Estate', agent: 'Dana Okafor', mls: 'REcolorado #8837702', tags: ['Two units', 'Rental income', 'Detached garage'], sky: ['#f3d2b8', '#fbeee2'], wall: '#efe2c9', trim: '#4a3f6b', x: 150, y: 60 },
+    { id: 'p6', kind: 'condo', price: 610000, est: 598000, comps: 4, addr: '250 Summit Ave, Unit 7', area: 'Cheesman Park, Denver', beds: 2, baths: 2, sqft: 1340, year: 2019, lot: '—', dom: 30, co: 'Summit Ridge Realty', agent: 'Marcus Webb', mls: 'REcolorado #8829018', tags: ['Mountain view', 'Rooftop deck', 'Gym'], sky: ['#c9d6ef', '#eef2fa'], wall: '#e4ddd2', trim: '#5a4632', x: 300, y: 140 },
+  ];
+  const COMPS = {
+    p1: [['4096 Larkspur Lane', 'Oct 22', 528000, 1985], ['3871 W 41st Ave', 'Oct 9', 511000, 1890], ['4310 Raleigh St', 'Sep 26', 534000, 2010], ['4022 Stuart St', 'Sep 12', 506000, 1870]],
+    p3: [['22 Juniper Court', 'Oct 14', 518000, 1720], ['9 Laurel Mews', 'Sep 28', 541000, 1810], ['140 Garnet Ln', 'Sep 3', 524000, 1760]],
+    p4: [['918 Aster Way', 'Oct 30', 492000, 1540], ['4401 W 10th Ave', 'Oct 5', 479000, 1500], ['850 Perry St', 'Sep 20', 488000, 1555]],
+  };
+  const compsFor = h => COMPS[h.id] || [[`Nearby sale A`, 'Oct 18', Math.round(h.est * 1.01 / 1000) * 1000, h.sqft + 40], [`Nearby sale B`, 'Oct 2', Math.round(h.est * 0.985 / 1000) * 1000, h.sqft - 30], [`Nearby sale C`, 'Sep 15', Math.round(h.est * 1.005 / 1000) * 1000, h.sqft + 10]];
+  const pic = h => art(h.kind, h.sky, h.wall, h.trim, h.id);
+
+  const PAGES = [
+    { id: 'home', name: 'Home', url: 'nestmatch.com', purpose: 'The landing page: what Nestmatch does in one line, search straight from the hero, how it works, households, value badges, markets, and a pitch to agents.', tryit: 'Type a ZIP code in the hero search and press Search. “Start matching” opens the app storyboard in a new tab.' },
+    { id: 'search', name: 'Search', url: 'nestmatch.com/homes?area=denver', purpose: 'Listing search from the MLS feed, with value badges, a map, and the MLS attribution every listing needs.', tryit: 'Tick “Good value or better”, sort by best value, then open a listing.' },
+    { id: 'listing', name: 'Listing page', url: 'nestmatch.com/homes/4120-larkspur-lane', purpose: 'One home: the value estimate with its comparable sales, a payment estimate, and an “ask about this home” form that records consent before any lead is sold.', tryit: 'Fill in the form, read the consent text, and send it. The confirmation says who will reply.' },
+    { id: 'agents', name: 'For agents', url: 'nestmatch.com/agents', purpose: 'Sells to agents and brokerages: lead types, the website and widget, plans, and common questions.', tryit: 'Open the FAQ about represented buyers. “Join as an agent” opens the realtor portal storyboard.' },
+    { id: 'privacy', name: 'Privacy choices', url: 'nestmatch.com/privacy/choices', purpose: 'Privacy controls required by state laws: sharing choices, and requests to see, correct or delete your data.', tryit: 'Submit a delete request. It gets an ID and a due date, like the requests in the admin console.' },
+  ];
+  const st = { page: 'home', loc: 'zip', onlyGood: false, sort: 'Newest', type: 'Any type', maxPrice: 'Any price', saved: new Set(), listing: 'p1', sent: false, prReq: null };
+
+  const toastEl = $('#toast');
+  function toast(m) { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(toastEl._t); toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 2600); }
+
+  /* ---------- pages ---------- */
+  const P = {};
+  P.home = () => {
+    const h = HOMES[0];
+    return `<div class="page">
+      <section class="hero">
+        <div>
+          <h1>Swipe your way <em>home.</em></h1>
+          <p class="big">Answer six quick questions. Swipe on homes that fit. Decide together with everyone you’re moving with, then talk to an agent when you’re ready.</p>
+          <form class="searchbox" id="heroSearch">
+            <div class="seg" role="group" aria-label="Search by">${[['zip', 'ZIP code'], ['city', 'City'], ['school', 'School district']].map(([v, l]) => `<button type="button" data-loc="${v}" aria-pressed="${st.loc === v}">${l}</button>`).join('')}</div>
+            <div class="searchrow"><input id="heroQ" aria-label="Where" placeholder="${{ zip: 'e.g. 80206', city: 'e.g. Lakewood', school: 'e.g. Cherry Creek School District' }[st.loc]}" autocomplete="off"><button class="btn" type="submit">Search</button></div>
+          </form>
+          <p class="trust">Listings from REcolorado and IRES, refreshed every few hours · Free for buyers</p>
+        </div>
+        <div class="phone" aria-hidden="true"><div class="scr"><div class="bar"></div><div class="ttl">Your matches</div>
+          <div class="card">${art(h.kind, h.sky, h.wall, h.trim, 'hero')}<div class="info"><div style="display:flex;justify-content:space-between;align-items:center"><b>$489,000</b>${rating(h.price, h.est, h.comps).html}</div><small>4120 Larkspur Lane · 3 bd · 2.5 ba · 1,940 sq ft</small></div></div>
+          <div class="acts"><span style="color:#1f8a5b">♥</span><span style="color:#c2413a">✕</span></div></div></div>
+      </section>
+      <section class="band" id="how"><h2>Three steps, no endless scrolling</h2><p class="sub">Most home searches start with a map and 400 results. Nestmatch starts with you.</p>
+        <ol class="steps"><li><h3>Tell us what home means</h3><p>Type of home, where, must-haves and budget. Six screens, about two minutes.</p></li><li><h3>Swipe</h3><p>Swipe left to save a home, right to pass. Tell us why if you like, and your matches get sharper.</p></li><li><h3>Decide together</h3><p>Invite a partner or family. See the homes you all saved, the ones waiting on you, and the ones someone ruled out.</p></li></ol>
+      </section>
+      <section class="band duo" id="household">
+        <div><h2>Search as a household, not a group chat</h2><p class="sub" style="margin-bottom:16px">Everyone swipes on their own. Nestmatch keeps three lists for the whole household, so nobody forwards links at midnight.</p>
+          <p style="margin:0;color:var(--muted);font-size:14px">Your reasons for passing on a home stay private. The household only sees that it’s out.</p></div>
+        <div class="hhdemo"><div class="hhtabs"><span class="on">Common 2</span><span>Waiting on you 1</span><span>Denied 1</span></div>
+          ${[HOMES[0], HOMES[3]].map(x => `<div class="mini"><div class="t">${art(x.kind, x.sky, x.wall, x.trim, 'hh' + x.id)}</div><div><b>${usd(x.price)}</b><small>${x.addr}</small><div class="votes"><span class="vote y">You ✓ saved</span><span class="vote y">Sam ✓ saved</span></div></div></div>`).join('')}</div>
+      </section>
+      <section class="band duo" id="value">
+        <div><h2>Know a good deal when you see one</h2><p class="sub" style="margin-bottom:12px">Every listing is compared with recent sales of similar homes nearby. The badge tells you where its price sits.</p>
+          <p style="margin:0;color:var(--muted);font-size:14px">It’s an estimate, not an appraisal. Homes with too few similar sales show no badge rather than a guess.</p></div>
+        <div class="box" style="margin:0"><div class="scale">
+          ${[['5% or more below the estimate', 0], ['2–5% below', 1], ['Within 2% either way', 2], ['2–5% above', 3], ['5% or more above', 4]].map(([t, i]) => `<div>${badgeFor(i)}<span>${t}</span></div>`).join('')}
+        </div></div>
+      </section>
+      <section class="band"><h2>Where we are</h2><p class="sub">Colorado first, with more of the Front Range on the way.</p>
+        <div class="markets">${[['Denver', '18,400 homes'], ['Lakewood & Golden', '2,900'], ['Aurora', '3,100'], ['Boulder County', '6,100'], ['Colorado Springs', 'coming soon']].map(([m, n]) => `<button data-go="search">${m}<small>${n}</small></button>`).join('')}</div>
+      </section>
+      <section class="agentband"><div><h2 style="margin:0 0 8px">Are you an agent?</h2><p>Meet buyers who already know what they want: their must-haves, their budget and who they’re deciding with.</p></div><button class="btn sun" data-go="agents">See how it works for agents</button></section>
+      <p class="disclaimer" id="fair"><b>Fair housing.</b> Nestmatch and Nestmatch Realty follow the federal Fair Housing Act and Colorado fair housing law. We never use race, color, religion, sex, disability, familial status, national origin or other protected traits to rank homes, route buyers or target ads.</p>
+    </div>`;
+  };
+
+  function filtered() {
+    let r = HOMES.filter(h => !st.onlyGood || rating(h.price, h.est, h.comps).i >= 0 && rating(h.price, h.est, h.comps).i <= 1);
+    if (st.type !== 'Any type') r = r.filter(h => ({ Condo: 'condo', Attached: 'attached', 'Free standing': 'free', 'Multi-family': 'multi' }[st.type] === h.kind));
+    if (st.maxPrice !== 'Any price') r = r.filter(h => h.price <= +st.maxPrice.replace(/\D/g, '') * 1000);
+    if (st.sort === 'Best value') r = r.slice().sort((a, b) => (a.price - a.est) / a.est - (b.price - b.est) / b.est);
+    if (st.sort === 'Price: low to high') r = r.slice().sort((a, b) => a.price - b.price);
+    if (st.sort === 'Newest') r = r.slice().sort((a, b) => a.dom - b.dom);
+    return r;
+  }
+  const lcard = h => `<div class="lcard" role="button" tabindex="0" data-listing="${h.id}"><div class="ph">${pic(h)}<button class="heart" data-heart="${h.id}" aria-pressed="${st.saved.has(h.id)}" aria-label="Save ${h.addr}">${st.saved.has(h.id) ? '♥' : '♡'}</button></div>
+    <div class="bd"><div class="pr"><b>${usd(h.price)}</b>${rating(h.price, h.est, h.comps).html}</div><div class="sp">${h.beds} bd · ${h.baths} ba · ${h.sqft.toLocaleString()} sq ft</div><div class="ad">${h.addr}, ${h.area}</div><div class="co">Listing courtesy of ${h.co} · ${h.mls}</div></div></div>`;
+  P.search = () => {
+    const r = filtered();
+    return `<div class="page">
+      <div class="filters">
+        <input id="sq" value="${(st.q || 'Denver, CO').replace(/"/g, '&quot;')}" aria-label="Location">
+        <select id="fType" aria-label="Home type">${['Any type', 'Condo', 'Attached', 'Free standing', 'Multi-family'].map(o => `<option${o === st.type ? ' selected' : ''}>${o}</option>`).join('')}</select>
+        <select id="fPrice" aria-label="Maximum price">${['Any price', 'Up to $450K', 'Up to $550K', 'Up to $650K'].map(o => `<option${o === st.maxPrice ? ' selected' : ''}>${o}</option>`).join('')}</select>
+        <label class="chk"><input type="checkbox" id="fGood" ${st.onlyGood ? 'checked' : ''}>Good value or better</label>
+        <select id="fSort" aria-label="Sort">${['Newest', 'Best value', 'Price: low to high'].map(o => `<option${o === st.sort ? ' selected' : ''}>${o}</option>`).join('')}</select>
+      </div>
+      <p style="margin:0 0 12px;font-size:14px;color:var(--muted)">${r.length} of 18,442 homes shown · example listings</p>
+      <div class="results"><div class="grid">${r.map(lcard).join('') || '<p class="muted">No homes match. Try fewer filters.</p>'}</div>
+        <div class="map" aria-label="Map of results"><svg viewBox="0 0 380 300"><rect width="380" height="300" fill="var(--chip)"/>
+          <path d="M0 210 C80 180 150 240 230 200 S330 150 380 170" fill="none" stroke="var(--line)" stroke-width="14"/>
+          <path d="M60 0 L90 300 M200 0 L190 300 M310 0 L330 300 M0 80 L380 70 M0 150 L380 160" stroke="var(--line)" stroke-width="5"/>
+          <rect x="20" y="20" width="60" height="40" rx="6" fill="var(--accent-soft)"/><rect x="250" y="240" width="90" height="44" rx="6" fill="var(--accent-soft)"/>
+          ${r.map(h => `<g style="cursor:pointer" data-listing="${h.id}"><rect x="${h.x - 30}" y="${h.y - 14}" width="60" height="24" rx="12" fill="${rating(h.price, h.est, h.comps).i <= 1 && rating(h.price, h.est, h.comps).i >= 0 ? 'var(--accent)' : 'var(--panel)'}" stroke="var(--accent)"/><text x="${h.x}" y="${h.y + 3}" text-anchor="middle" font-size="12" font-weight="700" fill="${rating(h.price, h.est, h.comps).i <= 1 && rating(h.price, h.est, h.comps).i >= 0 ? 'var(--accent-ink)' : 'var(--ink)'}">$${Math.round(h.price / 1000)}K</text></g>`).join('')}
+        </svg></div>
+      </div>
+      <p class="disclaimer">Listing data from REcolorado and IRES. Information is deemed reliable but not guaranteed and should be independently verified. Each listing shows the brokerage that holds it. Value badges are Nestmatch estimates, not appraisals.</p>
+    </div>`;
+  };
+
+  P.listing = () => {
+    const h = HOMES.find(x => x.id === st.listing), r = rating(h.price, h.est, h.comps);
+    const loan = h.price * 0.9, rr = 0.065 / 12, pay = loan * rr / (1 - Math.pow(1 + rr, -360)) + h.price * 0.011 / 12;
+    return `<div class="page">
+      <div class="crumbs"><button data-go="search">← Back to search</button> · ${h.area}</div>
+      <div class="ldetail">
+        <div>
+          <div class="gallery">${pic(h)}</div>
+          <div class="lt"><h1>${usd(h.price)}</h1><p class="addr">${h.addr}, ${h.area}</p>
+            <div class="facts"><span><b>${h.beds}</b> bd</span><span><b>${h.baths}</b> ba</span><span><b>${h.sqft.toLocaleString()}</b> sq ft</span><span>Built <b>${h.year}</b></span><span>Lot <b>${h.lot}</b></span><span><b>${h.dom}</b> days listed</span></div></div>
+          <div class="box"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><h3 style="margin:0">Is it a good price?</h3>${r.html}</div>
+            ${r.i >= 0 ? `<p style="margin:0 0 12px;font-size:14px">Our estimate is <b>${usd(h.est)}</b>. The list price is <b>${Math.abs(r.pct * 100).toFixed(1)}% ${r.pct < 0 ? 'below' : 'above'}</b> it, based on ${h.comps} similar homes that sold nearby.</p>
+            <div class="tablewrap"><table><thead><tr><th>Recent sale</th><th>Sold</th><th class="num">Price</th><th class="num">$/sq ft</th></tr></thead><tbody>${compsFor(h).map(([a, d, p, s]) => `<tr><td>${a}</td><td>${d}</td><td class="num">${usd(p)}</td><td class="num">$${Math.round(p / s)}</td></tr>`).join('')}<tr><td><b>This home</b></td><td>Listed</td><td class="num"><b>${usd(h.price)}</b></td><td class="num"><b>$${Math.round(h.price / h.sqft)}</b></td></tr></tbody></table></div>
+            <p style="margin:10px 0 0;font-size:12px;color:var(--muted)">An estimate, not an appraisal. Condition and updates aren’t fully reflected.</p>` : '<p style="margin:0;font-size:14px">Too few similar homes have sold nearby to estimate a value.</p>'}</div>
+          <div class="box"><h3>Features</h3><div class="tags">${h.tags.map(t => `<span>${t}</span>`).join('')}</div></div>
+          <p class="disclaimer">Listing courtesy of ${h.co} (${h.agent}). ${h.mls}. Information deemed reliable but not guaranteed.</p>
+        </div>
+        <aside class="side">
+          <div class="box" style="margin:0"><h3>Ask about this home</h3>
+            ${st.sent ? `<div class="done"><b>Sent.</b> A local agent will reply within a few hours, usually much sooner. You’ll also get a copy by email.</div>`
+            : `<form class="form" id="askForm">
+              <label class="f">Name<input type="text" id="aName" autocomplete="name" required></label>
+              <label class="f">Email<input type="email" id="aEmail" autocomplete="email" required></label>
+              <label class="f">Phone (optional)<input type="tel" id="aPhone" autocomplete="tel"></label>
+              <label class="f">Message<textarea id="aMsg">I’d like to see ${h.addr}.</textarea></label>
+              <label class="consent"><input type="checkbox" id="aConsent"><span>I agree that Nestmatch Realty and one local real estate agent may call or text me at the number above about homes, including with automated technology. Consent isn’t required to buy or rent. Message and data rates may apply. Reply STOP to opt out.</span></label>
+              <button class="btn" type="submit" id="aSend" disabled>Send</button>
+              <p style="margin:0;font-size:12px;color:var(--muted)">Without the box ticked, we’ll only reply by email. We never sell your details to data brokers.</p>
+            </form>`}
+          </div>
+          <div class="box" style="margin:0"><h3>Estimated monthly payment</h3><div class="pay">${usd(pay)}<span style="font-size:14px;font-weight:500;color:var(--muted)"> /month</span></div><p style="margin:6px 0 0;font-size:13px;color:var(--muted)">With 10% down at 6.5% for 30 years, plus taxes and insurance. Illustration only.</p></div>
+        </aside>
+      </div>
+    </div>`;
+  };
+
+  P.agents = () => `<div class="page">
+    <section class="ahero"><p class="eyebrow">For agents and brokerages</p><h1>Buyers who already know what they want.</h1>
+      <p>Every Nestmatch lead comes with a house profile, the homes they saved, the people they’re deciding with, and consent to be contacted.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="agent.html">Join as an agent</a><button class="btn ghost" data-act="demo">Book a demo</button></div></section>
+    <div class="stats"><div><b>9 min</b><span>median first reply from Nestmatch agents</span></div><div><b>34%</b><span>of buyer leads tour a home</span></div><div><b>2.1%</b><span>of leads refunded for bad contact details</span></div></div>
+    <section class="band" style="padding-top:8px"><h2>What you can buy</h2><p class="sub">Example prices for the Denver area. You set a weekly budget and stop any time.</p>
+      <div class="products">
+        <div class="prod"><h3>Buyer leads</h3><p>Unrepresented buyers in the markets you choose, with their profile and saved homes. Yours alone for 30 days.</p><span class="price">From $60 per lead</span></div>
+        <div class="prod"><h3>Agent connections</h3><p>When a buyer who already has an agent saves your listing, we introduce you to their agent.</p><span class="price">$30 per connection</span></div>
+        <div class="prod"><h3>Referral leads</h3><p>Pay nothing up front. Pay a share of your commission at closing, through Nestmatch Realty.</p><span class="price">25–35% of commission</span></div>
+      </div></section>
+    <section class="band"><h2>Plans</h2><p class="sub">Every plan includes your own website with the swipe widget and the agent portal.</p>
+      <div class="plans">
+        <div class="plan"><h3>Solo</h3><div class="amt">$79<small> /month</small></div><ul><li>One agent</li><li>Website and swipe widget</li><li>Weekly email reports</li></ul><a class="btn ghost" href="agent.html">Start Solo</a></div>
+        <div class="plan feature"><h3>Pro</h3><div class="amt">$59<small> /agent/month</small></div><ul><li>2 to 25 agents</li><li>Brokerage reports and team routing</li><li>Pricing tool for listings</li></ul><a class="btn" href="agent.html">Start Pro</a></div>
+        <div class="plan"><h3>Team</h3><div class="amt">Custom</div><ul><li>26 agents or more</li><li>Volume lead pricing</li><li>Dedicated support</li></ul><button class="btn ghost" data-act="demo">Talk to sales</button></div>
+      </div></section>
+    <section class="band"><h2>Common questions</h2><div class="faq">
+      <details><summary>What happens when a buyer already has an agent?</summary><p>We never sell a represented buyer to another agent. If they save your listing, you’re introduced to their agent instead, following NAR Code of Ethics Article 16.</p></details>
+      <details><summary>Can I get a refund on a bad lead?</summary><p>Yes, within 7 days, for a phone number that doesn’t work, a duplicate or fake request, or someone who was already your client.</p></details>
+      <details><summary>Do my listings show a value badge?</summary><p>Buyers see a badge when there are enough nearby sales. Your website only shows Great value, Good value and Fair price, and your seller can turn the estimate off.</p></details>
+      <details><summary>Who holds the licenses?</summary><p>Nestmatch Realty is a licensed brokerage. It holds the MLS memberships behind our listing data and receives referral fees.</p></details>
+    </div></section>
+  </div>`;
+
+  P.privacy = () => `<div class="page"><section class="ahero" style="padding-bottom:10px"><p class="eyebrow">Privacy</p><h1 style="font-size:clamp(30px,4vw,44px)">Your privacy choices</h1><p style="font-size:16px">Choose how your information is shared, or ask us to show, correct or delete it. We also honor Global Privacy Control signals from your browser.</p></section>
+    <div class="priv">
+      <div class="box" style="margin:0"><h3>Sharing</h3>
+        <div class="toggle"><label for="pv1"><b>Don’t sell or share my personal information</b><small>We don’t sell your details to data brokers. With this on, we also stop sharing for ads and only share with agents and vendors you ask to hear from.</small></label><input type="checkbox" id="pv1"></div>
+        <div class="toggle"><label for="pv2"><b>Use my activity in market reports</b><small>Only as part of totals, like “340 buyers in 80206 this month”. Never on its own.</small></label><input type="checkbox" id="pv2" checked></div>
+        <div class="toggle"><label for="pv3"><b>Let agents and vendors contact me</b><small>Turn off to withdraw consent. Agents you already work with keep your past messages.</small></label><input type="checkbox" id="pv3" checked></div>
+        <button class="btn sm" data-act="savePriv" style="margin-top:12px">Save choices</button>
+      </div>
+      <div class="box" style="margin:0"><h3>Make a request</h3>
+        ${st.prReq ? `<div class="done"><b>Request ${st.prReq.id} received.</b> We’ll confirm it’s you by email, then reply by <b>${st.prReq.due}</b>. You can check its status from the link in that email.</div>`
+        : `<form class="form" id="prForm"><div class="radios">${['See the information you have about me', 'Correct my information', 'Delete my information'].map((t, i) => `<label><input type="radio" name="prType" value="${t}"${i === 2 ? ' checked' : ''}>${t}</label>`).join('')}</div>
+          <label class="f">Email on your account<input type="email" id="prEmail" required autocomplete="email"></label>
+          <label class="f">State you live in<select id="prState"><option>Colorado</option><option>California</option><option>Texas</option><option>Arizona</option><option>Other</option></select></label>
+          <button class="btn" type="submit">Send request</button>
+          <p style="margin:0;font-size:12px;color:var(--muted)">Deleting your account also removes you from household lists and stops any lead that hasn’t been delivered.</p></form>`}
+      </div>
+    </div></div>`;
+
+  /* ---------- navigation ---------- */
+  function go(id, anchor) {
+    st.page = id; const i = PAGES.findIndex(p => p.id === id), p = PAGES[i];
+    const h = HOMES.find(x => x.id === st.listing);
+    $('#url').textContent = id === 'listing' ? 'nestmatch.com/homes/' + h.addr.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '') : p.url;
+    $('#noteNum').textContent = `Page ${i + 1} of ${PAGES.length}`; $('#noteTitle').textContent = p.name; $('#notePurpose').textContent = p.purpose; $('#noteTry').innerHTML = `<span>Try it:</span> ${p.tryit}`;
+    $('#pages').innerHTML = PAGES.map(x => `<button data-go="${x.id}"${x.id === id ? ' aria-current="page"' : ''}>${x.name}</button>`).join('');
+    document.querySelectorAll('.sitenav button').forEach(b => b.toggleAttribute('aria-current', b.dataset.go === id && !b.dataset.anchor));
+    $('#content').innerHTML = P[id]();
+    const vp = $('#vp');
+    if (anchor) { const el = document.getElementById(anchor); if (el) vp.scrollTop = el.offsetTop - 70; } else vp.scrollTop = 0;
+  }
+  const root = document.querySelector('.wrap');
+  root.addEventListener('click', e => {
+    const heart = e.target.closest('[data-heart]');
+    if (heart) { e.stopPropagation(); const id = heart.dataset.heart; st.saved.has(id) ? st.saved.delete(id) : st.saved.add(id); heart.setAttribute('aria-pressed', st.saved.has(id)); heart.textContent = st.saved.has(id) ? '♥' : '♡'; return toast(st.saved.has(id) ? 'Saved. Create a free account to keep it and share with your household.' : 'Removed from saved homes.'); }
+    const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); return go(g.dataset.go, g.dataset.anchor); }
+    const l = e.target.closest('[data-listing]'); if (l) { st.listing = l.dataset.listing; st.sent = false; return go('listing'); }
+    const loc = e.target.closest('[data-loc]'); if (loc) { st.loc = loc.dataset.loc; return go('home'); }
+    const a = e.target.closest('[data-act]'); if (!a) return;
+    if (a.dataset.act === 'demo') return toast('This would open a calendar to book a 20-minute demo.');
+    if (a.dataset.act === 'savePriv') return toast('Your choices are saved.');
+  });
+  root.addEventListener('keydown', e => { const l = e.target.closest && e.target.closest('.lcard'); if (l && (e.key === 'Enter' || e.key === ' ') && e.target === l) { e.preventDefault(); st.listing = l.dataset.listing; st.sent = false; go('listing'); } });
+  root.addEventListener('submit', e => {
+    e.preventDefault();
+    if (e.target.id === 'heroSearch') { const q = $('#heroQ').value.trim(); st.q = q; go('search'); return toast(q ? `Showing homes near ${q}.` : 'Showing homes in Denver.'); }
+    if (e.target.id === 'askForm') { st.sent = true; go('listing'); return toast('Message sent.'); }
+    if (e.target.id === 'prForm') { st.prReq = { id: 'PR-122', due: 'January 6, 2027' /* 45 days, the longest common state deadline */ }; go('privacy'); return toast('Request received.'); }
+  });
+  root.addEventListener('input', e => {
+    if (['aName', 'aEmail', 'aConsent'].includes(e.target.id) || e.target.closest && e.target.closest('#askForm')) {
+      const ok = $('#aName').value.trim() && /.+@.+\..+/.test($('#aEmail').value); $('#aSend').disabled = !ok;
+    }
+  });
+  root.addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'fGood') { st.onlyGood = t.checked; go('search'); }
+    if (t.id === 'fSort') { st.sort = t.value; go('search'); }
+    if (t.id === 'fType') { st.type = t.value; go('search'); }
+    if (t.id === 'fPrice') { st.maxPrice = t.value; go('search'); }
+  });
+
+  go('home');
+})();
+</script>
+</body>
+</html>
